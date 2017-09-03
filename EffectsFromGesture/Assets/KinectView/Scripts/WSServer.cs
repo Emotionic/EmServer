@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using WebSocketSharp;
 using UnityEngine.SceneManagement;
 
@@ -12,9 +13,12 @@ public class WSServer : MonoBehaviour
     public event LikeHandler Like;
 
     private WebSocket ws = null;
-    private bool waitLaunch  = true;
     private Queue msgQueue;
     private byte[] QRData;
+    private string IP;
+    private bool initCustomized = false;
+
+    private Canvas _Canvas;
 
     private void Connect()
     {
@@ -23,7 +27,6 @@ public class WSServer : MonoBehaviour
         ws.OnOpen += (sender, e) =>
         {
             Debug.Log("WebSocket Open");
-            waitLaunch = false;
         };
 
         ws.OnMessage += (sender, e) =>
@@ -33,7 +36,6 @@ public class WSServer : MonoBehaviour
                 // QR Data
                 Debug.Log("QRCode data is coming.");
                 QRData = e.RawData;
-                msgQueue.Enqueue("SERV\nQR\n");
                 return;
             }
 
@@ -55,99 +57,130 @@ public class WSServer : MonoBehaviour
 
     }
 
-	private void Awake ()
+    private void Awake()
     {
         DontDestroyOnLoad(this.gameObject);
         msgQueue = Queue.Synchronized(new Queue());
     }
-	
+
     private void Start()
     {
-        Connect();
+        _Canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
 
+        SceneManager.activeSceneChanged += (prev, next) =>
+        {
+            _Canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
+            _Canvas.transform.Find("LabelIP").GetComponent<Text>().text = IP;
+
+            var texture = new Texture2D(256, 256, TextureFormat.RGB24, false);
+            texture.LoadRawTextureData(QRData);
+            texture.Apply();
+
+            _Canvas.transform.Find("QR").GetComponent<Image>().sprite = Sprite.Create(texture, new Rect(0, 0, 256, 256), Vector2.zero);
+            Canvas.ForceUpdateCanvases();
+        };
+
+        Connect();
     }
 
-	private void Update ()
+    private void Update()
     {
         if (Input.GetKey(KeyCode.C) && (Application.isEditor || Debug.isDebugBuild))
         {
             SceneManager.LoadScene("MainScene");
         }
 
-        if (waitLaunch) return;
+        if (ws == null || !ws.IsAlive)
+            return;
 
         lock (msgQueue.SyncRoot)
         {
-            foreach (var _msg in msgQueue)
+            try
             {
-                var msg = ((string)_msg).Split();
-                var snd = "";
-
-                switch (msg[1])
+                foreach (var _msg in msgQueue)
                 {
-                    /* IP ・ QRコード */
-                    case "IP":
-                        break;
+                    var msg = ((string)_msg).Split();
+                    var snd = "";
 
-                    case "QR":
-                        break;
+                    switch (msg[1])
+                    {
+                        /* IP */
+                        case "IP":
+                            IP = msg[2];
+                            _Canvas.transform.Find("LabelIP").GetComponent<Text>().text = IP;
+                            break;
 
-                    /* パフォーマー */
-                    case "CALIB":
-                        // キャリブレーションの開始
-                        customData = new CustomData();
-                        customData.DoShare = false;
-                        customData.JoinType = System.Convert.ToInt32("001", 2); // 2進数から変換
+                        /* パフォーマー */
+                        case "CALIB":
+                            // キャリブレーションの開始
+                            customData = CustomData.GetDefault();
 
-                        snd = "PERFORMER\n";
-                        snd += "CALIB_OK\n";
-                        snd += JsonUtility.ToJson(customData);
+                            snd = "PERFORMER\n";
+                            snd += "CALIB_OK\n";
+                            snd += JsonUtility.ToJson(customData);
 
-                        ws.Send(snd);
+                            ws.Send(snd);
 
-                        SceneManager.LoadScene("MainScene");
+                            break;
 
-                        break;
+                        case "CUSTOMIZE":
+                            // カスタマイズ
+                            customData = JsonUtility.FromJson<CustomData>(msg[2]);
+                            Debug.Log(string.Format("[{0}] CustomData : ", System.DateTime.Now));
+                            Debug.Log(customData);
+                            if (!initCustomized)
+                            {
+                                initCustomized = true;
+                                ReplyAR();
+                                SceneManager.LoadScene("MainScene");
+                            }
 
-                    case "CUSTOMIZE":
-                        // カスタマイズ
-                        customData = JsonUtility.FromJson<CustomData>(msg[2]);
-                        break;
+                            break;
 
-                    /* AR */
-                    case "AR":
-                        // AR準備完了
-                        var ardata = new ARData();
-                        ardata.MarkerPos = new[] { Vector3.zero };
-                        ardata.MarkerScale = Vector3.zero;
-                        ardata.EnabledEffects = new[] { "heart", "star" };
-                        
-                        snd = "CLIENT\n";
-                        snd += "AR_OK\n";
-                        snd += JsonUtility.ToJson(ardata) + "\n";
+                        /* AR */
+                        case "AR":
+                            // AR準備完了
+                            if (!initCustomized)
+                                break;
 
-                        ws.Send(snd);
+                            ReplyAR();
 
-                        break;
+                            break;
 
-                    case "LIKE":
-                        // いいね！
-                        var data = JsonUtility.FromJson<LikeData>(msg[2]);
-                        Like(data);
+                        case "LIKE":
+                            // いいね！
+                            var data = JsonUtility.FromJson<LikeData>(msg[2]);
+                            Like(data);
 
-                        break;
+                            break;
 
-                    default:
-                        break;
+                        default:
+                            break;
+                    }
+
                 }
-
             }
-
-            msgQueue.Clear();
-
+            finally
+            {
+                msgQueue.Clear();
+            }
         }
 
-	}
+    }
 
+    private void ReplyAR()
+    {
+        var snd = "";
+        var ardata = new ARData();
+        ardata.MarkerPos = new[] { Vector3.zero };
+        ardata.MarkerScale = Vector3.zero;
+        ardata.EnabledEffects = customData.EnabledEffects;
+
+        snd = "CLIENT\n";
+        snd += "AR_OK\n";
+        snd += JsonUtility.ToJson(ardata) + "\n";
+
+        ws.Send(snd);
+    }
 
 }
