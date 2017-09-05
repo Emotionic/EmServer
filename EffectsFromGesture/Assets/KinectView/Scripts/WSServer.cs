@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
 public class WSServer : MonoBehaviour
 {
     public CustomData customData;
-
+    
     public delegate void LikeHandler(LikeData data);
     public event LikeHandler Like;
 
@@ -17,6 +17,7 @@ public class WSServer : MonoBehaviour
     private byte[] QRData;
     private string IP;
     private bool initCustomized = false;
+    private float waitBeforePerform = 10;
 
     private Canvas _Canvas;
 
@@ -85,6 +86,17 @@ public class WSServer : MonoBehaviour
 
     private void Update()
     {
+        // 開始カウントダウン -> 遷移
+        if (initCustomized && SceneManager.GetActiveScene().name == "Calibration")
+        {
+            waitBeforePerform -= Time.deltaTime;
+            _Canvas.transform.Find("LabelIP").GetComponent<Text>().text = ((int)waitBeforePerform).ToString();
+            if (waitBeforePerform <= 0)
+            {
+                SceneManager.LoadScene("MainScene");
+            }
+        }
+
         if (Input.GetKey(KeyCode.C) && (Application.isEditor || Debug.isDebugBuild))
         {
             SceneManager.LoadScene("MainScene");
@@ -113,7 +125,10 @@ public class WSServer : MonoBehaviour
                         /* パフォーマー */
                         case "CALIB":
                             // キャリブレーションの開始
-                            customData = CustomData.GetDefault();
+                            if (!initCustomized)
+                            {
+                                customData = CustomData.GetDefault();
+                            }
 
                             snd = "PERFORMER\n";
                             snd += "CALIB_OK\n";
@@ -126,13 +141,11 @@ public class WSServer : MonoBehaviour
                         case "CUSTOMIZE":
                             // カスタマイズ
                             customData = JsonUtility.FromJson<CustomData>(msg[2]);
-                            Debug.Log(string.Format("[{0}] CustomData : ", System.DateTime.Now));
-                            Debug.Log(customData);
+                            Debug.Log("CUSTOMDATA");
+                            ReplyAR();
                             if (!initCustomized)
                             {
                                 initCustomized = true;
-                                ReplyAR();
-                                SceneManager.LoadScene("MainScene");
                             }
 
                             break;
