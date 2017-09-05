@@ -96,11 +96,12 @@ namespace Assets.KinectView.Scripts
                 AddingTrailRendererToBody(body);
             }
             
-            // 
+            /* 
             EffekseerHandle eh = EffekseerSystem.PlayEffect(_EffectNames[2], _ColorBodyView.GetBodies()[0].transform.Find(JointType.HandLeft.ToString()).transform.position);
             var floorPlane = _BodyManager.FloorClipPlane;
             var comp = Quaternion.FromToRotation(new Vector3(floorPlane.X, floorPlane.Y, floorPlane.Z), Vector3.left);
             eh.SetRotation(_BodyManager.GetData()[0].JointOrientations[JointType.HandLeft].Orientation.ToQuaternion(comp));
+            */
         }
 
         private void _GestureManager_GestureDetected(KeyValuePair<Gesture, DiscreteGestureResult> result, ulong id)
