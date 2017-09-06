@@ -188,6 +188,7 @@ public class WSServer : MonoBehaviour
         ardata.MarkerPos = new[] { Vector3.zero };
         ardata.MarkerScale = Vector3.zero;
         ardata.EnabledEffects = customData.EnabledEffects;
+        ardata.isLikeEnabled = customData.JoinType % 10 == 1;
 
         snd = "CLIENT\n";
         snd += "AR_OK\n";
