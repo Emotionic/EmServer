@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using Windows.Kinect;
 
 public class BodySourceManager : MonoBehaviour 
@@ -19,6 +20,18 @@ public class BodySourceManager : MonoBehaviour
     }
 
     public Windows.Kinect.Vector4 FloorClipPlane { get; private set; }
+
+    public List<Windows.Kinect.Vector4> GetJointOrientations(JointType jt)
+    {
+        List<Windows.Kinect.Vector4> orientations = new List<Windows.Kinect.Vector4>();
+        
+        foreach(var body in GetData())
+        {
+            orientations.Add(body.JointOrientations[jt].Orientation);
+        }
+
+        return orientations;
+    }
 
     void Start () 
     {

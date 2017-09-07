@@ -15,6 +15,14 @@ namespace Assets.KinectView.Scripts
         /// </summary>
         public event GestureHandler GestureDetected;
 
+        public List<ulong> TrackingIds
+        {
+            get
+            {
+                return _TrackedIds;
+            }
+        }
+
         /// <summary>
         /// BodySourceManagerクラス取得用オブジェクト
         /// </summary>

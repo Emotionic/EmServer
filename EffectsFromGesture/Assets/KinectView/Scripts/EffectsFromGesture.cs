@@ -26,7 +26,7 @@ namespace Assets.KinectView.Scripts
         /// <summary>
         /// エフェクト名
         /// </summary>
-        private readonly string[] _EffectNames = { "StairBroken", "punch", "sonicboom" };
+        private readonly string[] _EffectNames = { "StairBroken", "punch", "sonicboom", "linetrail_ver2" };
 
         // 仮 HSVのH
         private float H = 0f;
@@ -94,14 +94,10 @@ namespace Assets.KinectView.Scripts
             foreach (GameObject body in _ColorBodyView.GetBodies())
             {
                 AddingTrailRendererToBody(body);
+
+                EffekseerSystem.PlayEffect(_EffectNames[3], body.transform.Find(JointType.HandLeft.ToString()).transform.position);
             }
-            
-            /* 
-            EffekseerHandle eh = EffekseerSystem.PlayEffect(_EffectNames[2], _ColorBodyView.GetBodies()[0].transform.Find(JointType.HandLeft.ToString()).transform.position);
-            var floorPlane = _BodyManager.FloorClipPlane;
-            var comp = Quaternion.FromToRotation(new Vector3(floorPlane.X, floorPlane.Y, floorPlane.Z), Vector3.left);
-            eh.SetRotation(_BodyManager.GetData()[0].JointOrientations[JointType.HandLeft].Orientation.ToQuaternion(comp));
-            */
+
         }
 
         private void _GestureManager_GestureDetected(KeyValuePair<Gesture, DiscreteGestureResult> result, ulong id)
@@ -167,15 +163,11 @@ namespace Assets.KinectView.Scripts
 
             if (handTipLeft.GetComponent<TrailRenderer>() != null)
             {
-                H += 0.01f;
-                if (H > 1f)
-                    H = 0f;
-
-                Color col = Color.HSVToRGB(H, 1, 1);
-                handTipLeft.GetComponent<TrailRenderer>().startColor = col;
-                handTipRight.GetComponent<TrailRenderer>().startColor = col;
-                thumbLeft.GetComponent<TrailRenderer>().startColor = col;
-                thumbRight.GetComponent<TrailRenderer>().startColor = col;
+                
+                handTipLeft.GetComponent<TrailRenderer>().startColor = Color.red;
+                handTipRight.GetComponent<TrailRenderer>().startColor = Color.red;
+                thumbLeft.GetComponent<TrailRenderer>().startColor = Color.red;
+                thumbRight.GetComponent<TrailRenderer>().startColor = Color.red;
 
                 return;
             }
