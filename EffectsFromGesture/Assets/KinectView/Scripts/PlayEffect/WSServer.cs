@@ -7,8 +7,9 @@ using UnityEngine.SceneManagement;
 
 public class WSServer : MonoBehaviour
 {
-    public CustomData customData;
-    
+    public delegate void CustomizeHandler(CustomData data);
+    public event CustomizeHandler Customize;
+
     public delegate void LikeHandler(LikeData data);
     public event LikeHandler Like;
 
@@ -18,6 +19,7 @@ public class WSServer : MonoBehaviour
     private string IP;
     private bool initCustomized = false;
     private float waitBeforePerform = 10;
+    private CustomData customData;
 
     private Canvas _Canvas;
 
@@ -141,6 +143,7 @@ public class WSServer : MonoBehaviour
                         case "CUSTOMIZE":
                             // カスタマイズ
                             customData = JsonUtility.FromJson<CustomData>(msg[2]);
+                            Customize(customData);
                             Debug.Log("CUSTOMDATA");
                             ReplyAR();
                             if (!initCustomized)
