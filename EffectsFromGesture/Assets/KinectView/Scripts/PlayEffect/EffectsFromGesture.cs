@@ -23,6 +23,8 @@ namespace Assets.KinectView.Scripts
 
         private Camera _MainCamera;
 
+        private CustomData _CustomData;
+
         /// <summary>
         /// エフェクト名
         /// </summary>
@@ -56,6 +58,13 @@ namespace Assets.KinectView.Scripts
             _WSServer = GameObject.Find("WSServer").GetComponent<WSServer>();
 
             _WSServer.Like += _WSServer_Like;
+
+            _WSServer.Customize += _WSServer_Customize;
+        }
+
+        private void _WSServer_Customize(CustomData data)
+        {
+            _CustomData = data;
         }
 
         private void _WSServer_Like(LikeData data)
