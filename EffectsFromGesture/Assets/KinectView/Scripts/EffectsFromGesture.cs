@@ -42,6 +42,8 @@ namespace Assets.KinectView.Scripts
 
         private BodySourceManager _BodyManager;
 
+        private Dictionary<ulong, Dictionary<JointType, GameObject>> _Joints;
+
         // Use this for initialization
         void Start()
         {
@@ -91,13 +93,15 @@ namespace Assets.KinectView.Scripts
                 _IsRegMethod = true;
             }
 
+            _Joints = _ColorBodyView.JointsFromBodies;
+            
             foreach (GameObject body in _ColorBodyView.GetBodies())
             {
                 AddingTrailRendererToBody(body);
-
-                EffekseerSystem.PlayEffect(_EffectNames[3], body.transform.Find(JointType.HandLeft.ToString()).transform.position);
+                
+                EffekseerSystem.PlayEffect(_EffectNames[3], _Joints[ulong.Parse(body.name)][JointType.HandLeft].transform.position);
             }
-
+            
         }
 
         private void _GestureManager_GestureDetected(KeyValuePair<Gesture, DiscreteGestureResult> result, ulong id)
@@ -114,8 +118,8 @@ namespace Assets.KinectView.Scripts
 
                     // Jumpした
                     Vector3 pos =
-                        _ColorBodyView.GetBody(id).transform.Find(JointType.SpineMid.ToString()).transform.position;
-
+                        _Joints[id][JointType.SpineMid].transform.position;
+                    
                     EffekseerSystem.PlayEffect(_EffectNames[0], pos);
 
                     break;
@@ -135,7 +139,7 @@ namespace Assets.KinectView.Scripts
                     if (result.Value.Confidence < 0.2)
                         return;
 
-                    EffekseerSystem.PlayEffect(_EffectNames[1], _ColorBodyView.GetBody(id).transform.Find(JointType.HandRight.ToString()).transform.position);
+                    EffekseerSystem.PlayEffect(_EffectNames[1], _Joints[id][JointType.HandRight].transform.position);
                     break;
 
                 case "Punch_Right":
@@ -144,26 +148,27 @@ namespace Assets.KinectView.Scripts
                     if (result.Value.Confidence < 0.2)
                         return;
 
-                    EffekseerSystem.PlayEffect(_EffectNames[1], _ColorBodyView.GetBody(id).transform.Find(JointType.HandLeft.ToString()).transform.position);
+                    EffekseerSystem.PlayEffect(_EffectNames[1], _Joints[id][JointType.HandLeft].transform.position);
                     break;
             }
         }
-        
+
         /// <summary>
         /// 両手足にTrailRendererを付ける
         /// </summary>
         /// <param name="body">エフェクトを付けるBody</param>
         private void AddingTrailRendererToBody(GameObject body)
         {
-            GameObject handTipLeft = body.transform.Find(JointType.HandTipRight.ToString()).gameObject;
-            GameObject handTipRight = body.transform.Find(JointType.HandTipLeft.ToString()).gameObject;
+            ///////////// 
+            GameObject handTipLeft = _Joints[ulong.Parse(body.name)][JointType.HandTipRight];
+            GameObject handTipRight = _Joints[ulong.Parse(body.name)][JointType.HandTipLeft];
 
-            GameObject thumbLeft = body.transform.Find(JointType.FootRight.ToString()).gameObject;
-            GameObject thumbRight = body.transform.Find(JointType.FootLeft.ToString()).gameObject;
+            GameObject thumbLeft = _Joints[ulong.Parse(body.name)][JointType.FootRight];
+            GameObject thumbRight = _Joints[ulong.Parse(body.name)][JointType.FootLeft];
 
             if (handTipLeft.GetComponent<TrailRenderer>() != null)
             {
-                
+
                 handTipLeft.GetComponent<TrailRenderer>().startColor = Color.red;
                 handTipRight.GetComponent<TrailRenderer>().startColor = Color.red;
                 thumbLeft.GetComponent<TrailRenderer>().startColor = Color.red;
@@ -178,7 +183,7 @@ namespace Assets.KinectView.Scripts
             handTipRight.AddComponent<TrailRenderer>(),
             thumbLeft.AddComponent<TrailRenderer>(),
             thumbRight.AddComponent<TrailRenderer>()
-        };
+            };
 
             foreach (TrailRenderer hand_tr in hands_tr)
             {

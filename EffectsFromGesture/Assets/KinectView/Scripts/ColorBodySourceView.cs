@@ -58,6 +58,11 @@ public class ColorBodySourceView : MonoBehaviour
     private Dictionary<ulong, GameObject> _Bodies = new Dictionary<ulong, GameObject>();
 
     /// <summary>
+    /// idとJointTypeからJointのオブジェクトを得る辞書
+    /// </summary>
+    public Dictionary<ulong, Dictionary<Kinect.JointType, GameObject>> JointsFromBodies { get; private set; }
+
+    /// <summary>
     /// インスタンス化されたBodyManager
     /// </summary>
     private BodySourceManager _BodyManager;
@@ -111,7 +116,12 @@ public class ColorBodySourceView : MonoBehaviour
         { Kinect.JointType.SpineShoulder, Kinect.JointType.Neck },
         { Kinect.JointType.Neck, Kinect.JointType.Head },
     };
-    
+
+    private void Start()
+    {
+        JointsFromBodies = new Dictionary<ulong, Dictionary<Kinect.JointType, GameObject>>();
+    }
+
     /// <summary>
     /// Unityのアップデートメソッド
     /// </summary>
@@ -157,6 +167,7 @@ public class ColorBodySourceView : MonoBehaviour
             {
                 Destroy(_Bodies[trackingId]);
                 _Bodies.Remove(trackingId);
+                JointsFromBodies.Remove(trackingId);
             }
         }
 
@@ -174,7 +185,7 @@ public class ColorBodySourceView : MonoBehaviour
                     _Bodies[body.TrackingId] = CreateBodyObject(body.TrackingId);
                 }
 
-                RefreshBodyObject(body, _Bodies[body.TrackingId]);
+                RefreshBodyObject(body);
             }
         }
 
@@ -191,8 +202,9 @@ public class ColorBodySourceView : MonoBehaviour
     /// <returns>生成されたBodyのオブジェクト</returns>
     private GameObject CreateBodyObject(ulong id)
     {
-        GameObject body = new GameObject("Body:" + id);
-        
+        GameObject body = new GameObject(id.ToString());
+
+        JointsFromBodies[id] = new Dictionary<Kinect.JointType, GameObject>();
         for (Kinect.JointType jt = Kinect.JointType.SpineBase; jt <= Kinect.JointType.ThumbRight; jt++)
         {
             GameObject jointObj = new GameObject();
@@ -209,6 +221,8 @@ public class ColorBodySourceView : MonoBehaviour
             jointObj.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
             jointObj.name = jt.ToString();
             jointObj.transform.parent = body.transform;
+            
+            JointsFromBodies[id][jt] = jointObj;
         }
         
         return body;
@@ -218,8 +232,7 @@ public class ColorBodySourceView : MonoBehaviour
     /// Bodyオブジェクトのデータを更新する
     /// </summary>
     /// <param name="body">更新するbodyデータ</param>
-    /// <param name="bodyObject">オブジェクト</param>
-    private void RefreshBodyObject(Kinect.Body body, GameObject bodyObject)
+    private void RefreshBodyObject(Kinect.Body body)
     {
         for (Kinect.JointType jt = Kinect.JointType.SpineBase; jt <= Kinect.JointType.ThumbRight; jt++)
         {
@@ -231,7 +244,8 @@ public class ColorBodySourceView : MonoBehaviour
                 targetJoint = body.Joints[_BoneMap[jt]];
             }
 
-            Transform jointObj = bodyObject.transform.Find(jt.ToString());
+            ////// 
+            Transform jointObj = JointsFromBodies[body.TrackingId][jt].transform;
             jointObj.localPosition = GetVector3FromJoint(sourceJoint);
 
             if (IsBodyView)
