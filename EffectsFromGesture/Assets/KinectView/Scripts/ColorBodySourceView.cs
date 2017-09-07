@@ -243,8 +243,7 @@ public class ColorBodySourceView : MonoBehaviour
             {
                 targetJoint = body.Joints[_BoneMap[jt]];
             }
-
-            ////// 
+            
             Transform jointObj = JointsFromBodies[body.TrackingId][jt].transform;
             jointObj.localPosition = GetVector3FromJoint(sourceJoint);
 

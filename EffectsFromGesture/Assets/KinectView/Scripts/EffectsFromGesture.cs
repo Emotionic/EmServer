@@ -98,8 +98,6 @@ namespace Assets.KinectView.Scripts
             foreach (GameObject body in _ColorBodyView.GetBodies())
             {
                 AddingTrailRendererToBody(body);
-                
-                EffekseerSystem.PlayEffect(_EffectNames[3], _Joints[ulong.Parse(body.name)][JointType.HandLeft].transform.position);
             }
             
         }
@@ -147,7 +145,7 @@ namespace Assets.KinectView.Scripts
 
                     if (result.Value.Confidence < 0.2)
                         return;
-
+                    
                     EffekseerSystem.PlayEffect(_EffectNames[1], _Joints[id][JointType.HandLeft].transform.position);
                     break;
             }
@@ -159,7 +157,6 @@ namespace Assets.KinectView.Scripts
         /// <param name="body">エフェクトを付けるBody</param>
         private void AddingTrailRendererToBody(GameObject body)
         {
-            ///////////// 
             GameObject handTipLeft = _Joints[ulong.Parse(body.name)][JointType.HandTipRight];
             GameObject handTipRight = _Joints[ulong.Parse(body.name)][JointType.HandTipLeft];
 
@@ -168,8 +165,7 @@ namespace Assets.KinectView.Scripts
 
             if (handTipLeft.GetComponent<TrailRenderer>() != null)
             {
-
-                handTipLeft.GetComponent<TrailRenderer>().startColor = Color.red;
+                handTipLeft.GetComponent<TrailRenderer>().startColor = Color.HSVToRGB(H, 255, 255);
                 handTipRight.GetComponent<TrailRenderer>().startColor = Color.red;
                 thumbLeft.GetComponent<TrailRenderer>().startColor = Color.red;
                 thumbRight.GetComponent<TrailRenderer>().startColor = Color.red;
