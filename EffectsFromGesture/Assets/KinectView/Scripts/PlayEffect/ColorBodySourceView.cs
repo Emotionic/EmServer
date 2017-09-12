@@ -25,6 +25,8 @@ public class ColorBodySourceView : MonoBehaviour
     /// </summary>
     public Camera ConvertCamera;
 
+    public bool IsMirror;
+
     /// <summary>
     /// Kinectで取得したBodyデータを渡す
     /// </summary>
@@ -312,7 +314,7 @@ public class ColorBodySourceView : MonoBehaviour
                 Vector3 colorPoint3 = ConvertCamera.ScreenToWorldPoint(unityPoint);
 
                 // 向きを合わせる
-                colorPoint3.x *= -1;
+                colorPoint3.x *= (IsMirror) ? -1 : 1;
                 colorPoint3.y *= -1;
                 colorPoint3.z = -1;
 
