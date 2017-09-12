@@ -19,11 +19,13 @@ namespace Assets.KinectView.Scripts
         
         public GameObject BodySourceManager;
 
+        public GameObject Trail;
+
         private WSServer _WSServer;
 
         private Camera _MainCamera;
 
-        private CustomData _CustomData;
+        private Dictionary<string, EffectOption> _EffectsCustomize;
 
         /// <summary>
         /// エフェクト名
@@ -46,6 +48,8 @@ namespace Assets.KinectView.Scripts
 
         private Dictionary<ulong, Dictionary<JointType, GameObject>> _Joints;
 
+        private Dictionary<string, EffectAttributes> _GestureFromEffectAttributes;
+
         // Use this for initialization
         void Start()
         {
@@ -60,11 +64,22 @@ namespace Assets.KinectView.Scripts
             _WSServer.Like += _WSServer_Like;
 
             _WSServer.Customize += _WSServer_Customize;
+
+            _GestureManager = GestureManager.GetComponent<GestureManager>();
+            _BodyManager = BodySourceManager.GetComponent<BodySourceManager>();
+            _ColorBodyView = BodySourceManager.GetComponent<ColorBodySourceView>();
+            
+            // Todo
+            foreach (var name in _GestureManager.GestureNames)
+            {
+                _GestureFromEffectAttributes[name] = new EffectAttributes(0.6, JointType.SpineMid, _EffectNames[0]);
+            }
+
         }
 
         private void _WSServer_Customize(CustomData data)
         {
-            _CustomData = data;
+            _EffectsCustomize = JsonUtility.FromJson<Serialization<string, EffectOption>>(data.EffectsCustomize).ToDictionary();
         }
 
         private void _WSServer_Like(LikeData data)
@@ -85,12 +100,12 @@ namespace Assets.KinectView.Scripts
         // Update is called once per frame
         void Update()
         {
-            _GestureManager = GestureManager.GetComponent<GestureManager>();
-            _BodyManager = BodySourceManager.GetComponent<BodySourceManager>();
-            _ColorBodyView = BodySourceManager.GetComponent<ColorBodySourceView>();
-            
             if (_GestureManager == null || _ColorBodyView == null || _BodyManager == null)
-                return;
+            {
+                _GestureManager = GestureManager.GetComponent<GestureManager>();
+                _BodyManager = BodySourceManager.GetComponent<BodySourceManager>();
+                _ColorBodyView = BodySourceManager.GetComponent<ColorBodySourceView>();
+            }
 
             if (_MainCamera == null)
                 _MainCamera = GameObject.Find("ConvertCamera").GetComponent<Camera>();
@@ -114,6 +129,7 @@ namespace Assets.KinectView.Scripts
         private void _GestureManager_GestureDetected(KeyValuePair<Gesture, DiscreteGestureResult> result, ulong id)
         {
             Debug.Log("REC EVNET : " + result.Key.Name + " : " + id);
+            
             switch (result.Key.Name)
             {
                 case "Jump02":
@@ -189,6 +205,16 @@ namespace Assets.KinectView.Scripts
             thumbLeft.AddComponent<TrailRenderer>(),
             thumbRight.AddComponent<TrailRenderer>()
             };
+
+            // trail prefab instantiate
+            /*
+            if(!handTipLeft.transform.Find(Trail.name))
+            {
+                handTipLeft.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+                var obj = Instantiate(Trail, handTipLeft.transform);
+                obj.name = "Trail";
+            }
+            */
 
             foreach (TrailRenderer hand_tr in hands_tr)
             {

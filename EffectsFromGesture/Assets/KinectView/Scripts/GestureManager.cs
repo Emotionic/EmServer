@@ -71,7 +71,7 @@ namespace Assets.KinectView.Scripts
         /// <summary>
         /// Gesture名
         /// </summary>
-        private List<string> _GestureNames;
+        public List<string> GestureNames { get; private set; }
 
         /// <summary>
         /// Kinectで取得できる人数
@@ -81,7 +81,7 @@ namespace Assets.KinectView.Scripts
         private void Start()
         {
             // 各種初期化
-            _GestureNames = new List<string>();
+            GestureNames = new List<string>();
             _GestureFrameSourcesList = new List<VisualGestureBuilderFrameSource>(AcquirableBodyNumber);
             _GestureFrameReadersList = new List<VisualGestureBuilderFrameReader>(AcquirableBodyNumber);
             _TrackedIds = new List<ulong>();
@@ -92,7 +92,7 @@ namespace Assets.KinectView.Scripts
             // 利用可能なGestureの名前とそれ自身をリストに追加する
             foreach (var gesture in _GestureDatabase.AvailableGestures)
             {
-                _GestureNames.Add(gesture.Name);
+                GestureNames.Add(gesture.Name);
                 _Gestures.Add(gesture);
             }
             

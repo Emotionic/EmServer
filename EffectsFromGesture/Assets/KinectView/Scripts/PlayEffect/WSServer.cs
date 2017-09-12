@@ -190,7 +190,7 @@ public class WSServer : MonoBehaviour
         var ardata = new ARData();
         ardata.MarkerPos = new[] { Vector3.zero };
         ardata.MarkerScale = Vector3.zero;
-        ardata.EnabledEffects = customData.EnabledEffects;
+        ardata.EnabledEffects = customData.EnabledLikes;
         ardata.isLikeEnabled = customData.JoinType % 10 == 1;
 
         snd = "CLIENT\n";
