@@ -59,22 +59,24 @@ namespace Assets.KinectView.Scripts
 
             _MainCamera = GameObject.Find("ConvertCamera").GetComponent<Camera>();
 
-            _WSServer = GameObject.Find("WSServer").GetComponent<WSServer>();
+            if (GameObject.Find("WSServer") != null)
+            {
+                _WSServer = GameObject.Find("WSServer").GetComponent<WSServer>();
 
-            _WSServer.Like += _WSServer_Like;
+                _WSServer.Like += _WSServer_Like;
 
-            _WSServer.Customize += _WSServer_Customize;
+                _WSServer.Customize += _WSServer_Customize;
+            }
 
             _GestureManager = GestureManager.GetComponent<GestureManager>();
             _BodyManager = BodySourceManager.GetComponent<BodySourceManager>();
             _ColorBodyView = BodySourceManager.GetComponent<ColorBodySourceView>();
-            
-            // Todo
-            foreach (var name in _GestureManager.GestureNames)
-            {
-                _GestureFromEffectAttributes[name] = new EffectAttributes(0.6, JointType.SpineMid, _EffectNames[0]);
-            }
 
+            // Add effect attributes
+            _GestureFromEffectAttributes = new Dictionary<string, EffectAttributes>();
+            _GestureFromEffectAttributes["Jump02"] = new EffectAttributes(0.6, JointType.SpineMid, _EffectNames[0]);
+            _GestureFromEffectAttributes["Punch_Left"] = new EffectAttributes(0.2, JointType.HandRight, _EffectNames[1]);
+            _GestureFromEffectAttributes["Punch_Right"] = new EffectAttributes(0.2, JointType.HandLeft, _EffectNames[1]);
         }
 
         private void _WSServer_Customize(CustomData data)
@@ -128,52 +130,19 @@ namespace Assets.KinectView.Scripts
 
         private void _GestureManager_GestureDetected(KeyValuePair<Gesture, DiscreteGestureResult> result, ulong id)
         {
-            Debug.Log("REC EVNET : " + result.Key.Name + " : " + id);
-            
-            switch (result.Key.Name)
-            {
-                case "Jump02":
+            if (!_GestureFromEffectAttributes.ContainsKey(result.Key.Name))
+                return;
 
-                    if (result.Value.Confidence < 0.6)
-                        return;
+            EffectAttributes ea = _GestureFromEffectAttributes[result.Key.Name];
+            if (result.Value.Confidence < ea.Threshold)
+                return;
 
-                    Debug.Log("Jump02 Confidence : " + result.Value.Confidence);
+            Debug.Log(result.Key.Name + "Confidence : " + result.Value.Confidence);
 
-                    // Jumpした
-                    Vector3 pos =
-                        _Joints[id][JointType.SpineMid].transform.position;
-                    
-                    EffekseerSystem.PlayEffect(_EffectNames[0], pos);
+            Vector3 pos =
+                        _Joints[id][ea.AttachPosition].transform.position;
 
-                    break;
-                case "OpenMenu":
-
-                    if (result.Value.Confidence < 0.5)
-                        return;
-
-                    _MainCamera.backgroundColor = ((_MainCamera.backgroundColor == Color.black) ? Color.gray : Color.black);
-
-                    Debug.Log("OpenMenu Confidence : " + result.Value.Confidence);
-                    break;
-
-                case "Punch_Left":
-                    Debug.Log("Punch Left" + result.Value.Confidence);
-
-                    if (result.Value.Confidence < 0.2)
-                        return;
-
-                    EffekseerSystem.PlayEffect(_EffectNames[1], _Joints[id][JointType.HandRight].transform.position);
-                    break;
-
-                case "Punch_Right":
-                    Debug.Log("Punch Right" + result.Value.Confidence);
-
-                    if (result.Value.Confidence < 0.2)
-                        return;
-                    
-                    EffekseerSystem.PlayEffect(_EffectNames[1], _Joints[id][JointType.HandLeft].transform.position);
-                    break;
-            }
+            EffekseerSystem.PlayEffect(ea.EffectName, pos);
         }
 
         /// <summary>

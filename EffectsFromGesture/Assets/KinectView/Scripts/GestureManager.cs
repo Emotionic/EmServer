@@ -151,7 +151,6 @@ namespace Assets.KinectView.Scripts
         /// <param name="id">BodyのID</param>
         private void DetectGestures(VisualGestureBuilderFrame gestureFrame, ulong id)
         {
-            Debug.Log("DETECTGESTURES : " + id);
             if (gestureFrame == null || gestureFrame.DiscreteGestureResults == null)
                 return;
 
