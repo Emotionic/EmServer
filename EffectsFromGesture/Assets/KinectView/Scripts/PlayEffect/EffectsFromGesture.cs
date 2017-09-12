@@ -31,10 +31,7 @@ namespace Assets.KinectView.Scripts
         /// エフェクト名
         /// </summary>
         private readonly string[] _EffectNames = { "StairBroken", "punch", "linetrail_ver2" };
-
-        // 仮 HSVのH
-        private float H = 0f;
-
+        
         private GestureManager _GestureManager;
 
         private bool _IsRegMethod = false;
@@ -49,6 +46,8 @@ namespace Assets.KinectView.Scripts
         private Dictionary<ulong, Dictionary<JointType, GameObject>> _Joints;
 
         private Dictionary<string, EffectAttributes> _GestureFromEffectAttributes;
+
+        private RainbowColor _RbColor;
 
         // Use this for initialization
         void Start()
@@ -77,6 +76,8 @@ namespace Assets.KinectView.Scripts
             _GestureFromEffectAttributes["Jump02"] = new EffectAttributes(0.6, JointType.SpineMid, _EffectNames[0]);
             _GestureFromEffectAttributes["Punch_Left"] = new EffectAttributes(0.2, JointType.HandRight, _EffectNames[1]);
             _GestureFromEffectAttributes["Punch_Right"] = new EffectAttributes(0.2, JointType.HandLeft, _EffectNames[1]);
+
+            _RbColor = new RainbowColor();
         }
 
         private void _WSServer_Customize(CustomData data)
@@ -125,7 +126,8 @@ namespace Assets.KinectView.Scripts
             {
                 AddingTrailRendererToBody(body);
             }
-            
+
+            _RbColor.Update();
         }
 
         private void _GestureManager_GestureDetected(KeyValuePair<Gesture, DiscreteGestureResult> result, ulong id)
@@ -159,8 +161,8 @@ namespace Assets.KinectView.Scripts
 
             if (handTipLeft.GetComponent<TrailRenderer>() != null)
             {
-                handTipLeft.GetComponent<TrailRenderer>().startColor = Color.HSVToRGB(H, 255, 255);
-                handTipRight.GetComponent<TrailRenderer>().startColor = Color.red;
+                handTipLeft.GetComponent<TrailRenderer>().startColor = _RbColor.Rainbow;
+                handTipRight.GetComponent<TrailRenderer>().startColor = _RbColor.Rainbow;
                 thumbLeft.GetComponent<TrailRenderer>().startColor = Color.red;
                 thumbRight.GetComponent<TrailRenderer>().startColor = Color.red;
 
@@ -190,8 +192,8 @@ namespace Assets.KinectView.Scripts
                 hand_tr.material = TrailMaterial;
                 hand_tr.startWidth = 0.2f;
                 hand_tr.endWidth = 0.05f;
-                hand_tr.startColor = Color.HSVToRGB(H, 255, 255);
-                hand_tr.endColor = new Color(255, 255, 255, 0);
+                hand_tr.startColor = _RbColor.Rainbow;
+                hand_tr.endColor = new Color(1, 1, 1, 0);
                 hand_tr.time = 0.5f;
             }
         }
