@@ -30,7 +30,7 @@ namespace Assets.KinectView.Scripts
         /// <summary>
         /// エフェクト名
         /// </summary>
-        private readonly string[] _EffectNames = { "StairBroken", "punch", "sonicboom", "linetrail_ver2" };
+        private readonly string[] _EffectNames = { "StairBroken", "punch", "linetrail_ver2" };
 
         // 仮 HSVのH
         private float H = 0f;
