@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -31,19 +32,16 @@ public class WSServer : MonoBehaviour
 
     private Canvas _Canvas;
 
-    public void Button_OnClicked()
+    public void Connect()
     {
         var _ip = _Canvas.transform.Find("InputIP").GetComponent<InputField>().text;
         if (!string.IsNullOrEmpty(_ip))
-        {
             IP = _ip;
-            Connect();
-        }
-    }
 
-    private void Connect()
-    {
-        ws = new WebSocket("ws://localhost/ws");
+        var res = RequestHTTP(Method.GET, "emserver");
+        if (res != "ok") throw new Exception("Cannot connect EmServerWS");
+
+        ws = new WebSocket("ws://" + IP + "/ws");
 
         ws.OnOpen += (sender, e) =>
         {
@@ -222,4 +220,55 @@ public class WSServer : MonoBehaviour
         ws.Send(snd);
     }
 
+    private string RequestHTTP(Method method, string action, string value = null)
+    {
+        string url = "http://" + IP + "/" + action;
+
+        try
+        {
+            var wc = new System.Net.WebClient();
+            string resText = "";
+
+            switch (method)
+            {
+                case Method.GET:
+                    {
+                        byte[] resData = wc.DownloadData(url);
+                        resText = System.Text.Encoding.UTF8.GetString(resData);
+                    }
+                    break;
+
+                case Method.POST:
+                    {
+                        if (value == null)
+                            throw new ArgumentException();
+
+                        var ps = new System.Collections.Specialized.NameValueCollection();
+                        ps.Add("value", value);
+                        byte[] resData = wc.UploadValues(url, ps);
+                        resText = System.Text.Encoding.UTF8.GetString(resData);
+                    }
+                    break;
+
+                default:
+                    throw new ArgumentException();
+
+            }
+
+            wc.Dispose();
+
+            return resText;
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
+}
+
+public enum Method
+{
+    GET,
+    POST
 }
