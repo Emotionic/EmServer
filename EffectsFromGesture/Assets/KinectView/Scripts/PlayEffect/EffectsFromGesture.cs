@@ -153,29 +153,58 @@ namespace Assets.KinectView.Scripts
         /// <param name="body">エフェクトを付けるBody</param>
         private void AddingTrailRendererToBody(GameObject body)
         {
-            GameObject handTipLeft = _Joints[ulong.Parse(body.name)][JointType.HandTipRight];
-            GameObject handTipRight = _Joints[ulong.Parse(body.name)][JointType.HandTipLeft];
-
-            GameObject thumbLeft = _Joints[ulong.Parse(body.name)][JointType.FootRight];
-            GameObject thumbRight = _Joints[ulong.Parse(body.name)][JointType.FootLeft];
-
-            if (handTipLeft.GetComponent<TrailRenderer>() != null)
+            GameObject[] joints =
             {
-                handTipLeft.GetComponent<TrailRenderer>().startColor = _RbColor.Rainbow;
-                handTipRight.GetComponent<TrailRenderer>().startColor = _RbColor.Rainbow;
-                thumbLeft.GetComponent<TrailRenderer>().startColor = Color.red;
-                thumbRight.GetComponent<TrailRenderer>().startColor = Color.red;
-
-                return;
-            }
-
-            TrailRenderer[] hands_tr =
-            {
-            handTipLeft.AddComponent<TrailRenderer>(),
-            handTipRight.AddComponent<TrailRenderer>(),
-            thumbLeft.AddComponent<TrailRenderer>(),
-            thumbRight.AddComponent<TrailRenderer>()
+                _Joints[ulong.Parse(body.name)][JointType.HandTipRight],
+                _Joints[ulong.Parse(body.name)][JointType.HandTipLeft],
+                _Joints[ulong.Parse(body.name)][JointType.FootRight],
+                _Joints[ulong.Parse(body.name)][JointType.FootLeft]
             };
+
+            TrailRenderer[] joints_tr = new TrailRenderer[joints.Length];
+
+            for (int i = 0; i < joints.Length; i++)
+            {
+                if (_WSServer != null && _WSServer.IsConnected && !_EffectsCustomize.ContainsKey("Joint_" + joints[i].name))
+                {
+                    if (joints[i].GetComponent<TrailRenderer>() != null)
+                    {
+                        Destroy(joints[i].GetComponent<TrailRenderer>());
+                    }
+                    continue;
+                }
+
+                /*
+                joints_tr[i] = joints[i].GetComponent<TrailRenderer>();
+
+                if (joints_tr[i] == null)
+                {
+                    joints_tr[i] = joints[i].AddComponent<TrailRenderer>();
+                    joints_tr[i].material = TrailMaterial;
+                    joints_tr[i].startWidth = 0.2f;
+                    joints_tr[i].endWidth = 0.05f;
+                    joints_tr[i].startColor = _RbColor.Rainbow;
+                    joints_tr[i].endColor = new Color(1, 1, 1, 0);
+                    joints_tr[i].time = 0.5f;
+                }
+                EffectOption eOption = (_WSServer != null && _WSServer.IsConnected) ? _EffectsCustomize["Joint_" + joints[i].name] : new EffectOption("LINE", Color.black, true);
+
+                joints_tr[i].startColor = (eOption.isRainbow)
+                    ? _RbColor.Rainbow
+                    : eOption.Color;
+                */
+
+                if(!joints[i].transform.Find(Trail.name))
+                {
+                    var obj = Instantiate(Trail, joints[i].transform);
+                    obj.name = "Trail";
+                    // obj.GetComponent<TrailRenderer>().startColor = _RbColor.Rainbow;
+                    var obj2 = obj.transform.Find("Hand Particle");
+                    // obj2.GetComponent<ParticleSystem>().startColor = _RbColor.Rainbow;
+                    // obj2.Find("NG Hand Particle").GetComponent<ParticleSystem>().startColor = _RbColor.Rainbow;
+                }
+                
+            }
 
             // trail prefab instantiate
             /*
@@ -186,16 +215,7 @@ namespace Assets.KinectView.Scripts
                 obj.name = "Trail";
             }
             */
-
-            foreach (TrailRenderer hand_tr in hands_tr)
-            {
-                hand_tr.material = TrailMaterial;
-                hand_tr.startWidth = 0.2f;
-                hand_tr.endWidth = 0.05f;
-                hand_tr.startColor = _RbColor.Rainbow;
-                hand_tr.endColor = new Color(1, 1, 1, 0);
-                hand_tr.time = 0.5f;
-            }
+            
         }
         
     }
