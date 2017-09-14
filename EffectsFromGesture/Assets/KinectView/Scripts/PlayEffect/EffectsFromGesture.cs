@@ -160,48 +160,49 @@ namespace Assets.KinectView.Scripts
                 _Joints[ulong.Parse(body.name)][JointType.FootRight],
                 _Joints[ulong.Parse(body.name)][JointType.FootLeft]
             };
-
-            TrailRenderer[] joints_tr = new TrailRenderer[joints.Length];
-
+            
             for (int i = 0; i < joints.Length; i++)
             {
                 if (_WSServer != null && _WSServer.IsConnected && !_EffectsCustomize.ContainsKey("Joint_" + joints[i].name))
                 {
-                    if (joints[i].GetComponent<TrailRenderer>() != null)
+                    if (joints[i].transform.Find(Trail.name) != null)
                     {
-                        Destroy(joints[i].GetComponent<TrailRenderer>());
+                        Destroy(joints[i].transform.Find(Trail.name));
                     }
                     continue;
                 }
-
-                /*
-                joints_tr[i] = joints[i].GetComponent<TrailRenderer>();
-
-                if (joints_tr[i] == null)
-                {
-                    joints_tr[i] = joints[i].AddComponent<TrailRenderer>();
-                    joints_tr[i].material = TrailMaterial;
-                    joints_tr[i].startWidth = 0.2f;
-                    joints_tr[i].endWidth = 0.05f;
-                    joints_tr[i].startColor = _RbColor.Rainbow;
-                    joints_tr[i].endColor = new Color(1, 1, 1, 0);
-                    joints_tr[i].time = 0.5f;
-                }
+                
                 EffectOption eOption = (_WSServer != null && _WSServer.IsConnected) ? _EffectsCustomize["Joint_" + joints[i].name] : new EffectOption("LINE", Color.black, true);
 
-                joints_tr[i].startColor = (eOption.isRainbow)
-                    ? _RbColor.Rainbow
-                    : eOption.Color;
-                */
-
+                Transform trail;
                 if(!joints[i].transform.Find(Trail.name))
                 {
-                    var obj = Instantiate(Trail, joints[i].transform);
-                    obj.name = "Trail";
-                    // obj.GetComponent<TrailRenderer>().startColor = _RbColor.Rainbow;
-                    var obj2 = obj.transform.Find("Hand Particle");
-                    // obj2.GetComponent<ParticleSystem>().startColor = _RbColor.Rainbow;
-                    // obj2.Find("NG Hand Particle").GetComponent<ParticleSystem>().startColor = _RbColor.Rainbow;
+                    Instantiate(Trail, joints[i].transform).name = "Trail";
+                }
+
+                trail = joints[i].transform.Find(Trail.name);
+                TrailRenderer tr = trail.GetComponent<TrailRenderer>();
+                ParticleSystem[] pss =
+                    {
+                    trail.Find("Hand Particle").GetComponent<ParticleSystem>(),
+                    trail.Find("NG Hand Particle").GetComponent<ParticleSystem>()
+                    };
+
+                if (eOption.isRainbow)
+                {
+                    tr.startColor = _RbColor.Rainbow;
+                    foreach(ParticleSystem ps in pss)
+                    {
+                        ps.startColor = _RbColor.Rainbow;
+                    }
+                }
+                else
+                {
+                    tr.startColor = eOption.Color;
+                    foreach(ParticleSystem ps in pss)
+                    {
+                        ps.startColor = eOption.Color;
+                    }
                 }
                 
             }
