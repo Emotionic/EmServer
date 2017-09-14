@@ -9,9 +9,17 @@ public class WSServer : MonoBehaviour
 {
     public delegate void CustomizeHandler(CustomData data);
     public event CustomizeHandler Customize;
-
+    
     public delegate void LikeHandler(LikeData data);
     public event LikeHandler Like;
+
+    public bool IsConnected
+    {
+        get
+        {
+            return ws != null && ws.IsAlive;
+        }
+    }
 
     private WebSocket ws = null;
     private Queue msgQueue;
@@ -22,6 +30,16 @@ public class WSServer : MonoBehaviour
     private CustomData customData;
 
     private Canvas _Canvas;
+
+    public void Button_OnClicked()
+    {
+        var _ip = _Canvas.transform.Find("InputIP").GetComponent<InputField>().text;
+        if (!string.IsNullOrEmpty(_ip))
+        {
+            IP = _ip;
+            Connect();
+        }
+    }
 
     private void Connect()
     {
@@ -82,8 +100,7 @@ public class WSServer : MonoBehaviour
             _Canvas.transform.Find("QR").GetComponent<Image>().sprite = Sprite.Create(texture, new Rect(0, 0, 256, 256), Vector2.zero);
             Canvas.ForceUpdateCanvases();
         };
-
-        Connect();
+        
     }
 
     private void Update()
@@ -99,12 +116,17 @@ public class WSServer : MonoBehaviour
             }
         }
 
-        if (Input.GetKey(KeyCode.C) && (Application.isEditor || Debug.isDebugBuild))
+        if ((Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftShift) && Input.GetKey(KeyCode.C)) && (Application.isEditor || Debug.isDebugBuild))
         {
             SceneManager.LoadScene("MainScene");
         }
 
-        if (ws == null || !ws.IsAlive)
+        if (!IsConnected && Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.Return))
+        {
+            Connect();
+        }
+
+        if (!IsConnected)
             return;
 
         lock (msgQueue.SyncRoot)
