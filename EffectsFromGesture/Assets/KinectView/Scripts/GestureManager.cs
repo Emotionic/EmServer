@@ -164,7 +164,7 @@ namespace Assets.KinectView.Scripts
                 if (result.Value == null || !result.Value.Detected)
                     continue;
 
-                Debug.Log("SEND EVENT : " + result.Key.Name + " : " + id);
+                Debug.Log("SEND EVENT : " + result.Key.Name + " : " + result.Value.Confidence);
                 GestureDetected(result, id);
             }
         }

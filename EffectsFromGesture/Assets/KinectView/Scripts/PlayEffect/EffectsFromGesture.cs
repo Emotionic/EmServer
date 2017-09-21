@@ -77,7 +77,7 @@ namespace Assets.KinectView.Scripts
             _GestureFromEffectAttributes["Punch_Left"] = new EffectAttributes(0.2, JointType.HandRight, _EffectNames[1]);
             _GestureFromEffectAttributes["Punch_Right"] = new EffectAttributes(0.2, JointType.HandLeft, _EffectNames[1]);
 
-            _RbColor = new RainbowColor();
+            _RbColor = new RainbowColor(0, 0.001f);
         }
 
         private void _WSServer_Customize(CustomData data)
@@ -96,6 +96,7 @@ namespace Assets.KinectView.Scripts
                 case "star":
                     Debug.Log("STAR");
                     _MainCamera.backgroundColor = data.color;
+
                     break;
             }
         }
