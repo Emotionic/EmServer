@@ -6,16 +6,12 @@ public class ColorSourceManager : MonoBehaviour
 {
     public int ColorWidth { get; private set; }
     public int ColorHeight { get; private set; }
+    public Texture2D Texture { get; private set; }
+
+    private byte[] Data;
 
     private KinectSensor _Sensor;
     private ColorFrameReader _Reader;
-    private Texture2D _Texture;
-    private byte[] _Data;
-    
-    public Texture2D GetColorTexture()
-    {
-        return _Texture;
-    }
     
     void Start()
     {
@@ -29,8 +25,8 @@ public class ColorSourceManager : MonoBehaviour
             ColorWidth = frameDesc.Width;
             ColorHeight = frameDesc.Height;
             
-            _Texture = new Texture2D(frameDesc.Width, frameDesc.Height, TextureFormat.RGBA32, false);
-            _Data = new byte[frameDesc.BytesPerPixel * frameDesc.LengthInPixels];
+            Texture = new Texture2D(frameDesc.Width, frameDesc.Height, TextureFormat.RGBA32, false);
+            Data = new byte[frameDesc.BytesPerPixel * frameDesc.LengthInPixels];
             
             if (!_Sensor.IsOpen)
             {
@@ -47,9 +43,9 @@ public class ColorSourceManager : MonoBehaviour
             
             if (frame != null)
             {
-                frame.CopyConvertedFrameDataToArray(_Data, ColorImageFormat.Rgba);
-                _Texture.LoadRawTextureData(_Data);
-                _Texture.Apply();
+                frame.CopyConvertedFrameDataToArray(Data, ColorImageFormat.Rgba);
+                Texture.LoadRawTextureData(Data);
+                Texture.Apply();
                 
                 frame.Dispose();
                 frame = null;
