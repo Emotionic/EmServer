@@ -163,7 +163,7 @@ GameObject:
   - component: {fileID: 534225627}
   m_Layer: 5
   m_Name: Canvas
-  m_TagString: Untagged
+  m_TagString: MainCanvas
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -364,7 +364,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58efaa5188f353d4192bed7a8deb8386, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  IsBodyView: 1
+  IsBodyView: 0
   BoneMaterial: {fileID: 2100000, guid: f2ea145c63353784985576f08398a815, type: 2}
   BodySourceManager: {fileID: 689630467}
   ConvertCamera: {fileID: 814211668}
@@ -610,7 +610,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &885686813
 RectTransform:
   m_ObjectHideFlags: 0
@@ -817,7 +817,6 @@ GameObject:
   - component: {fileID: 1747301863}
   - component: {fileID: 1747301862}
   - component: {fileID: 1747301861}
-  - component: {fileID: 1747301866}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -864,7 +863,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 60
+  field of view: 33
   orthographic: 0
   orthographic size: 5.4
   m_Depth: 0
@@ -889,27 +888,12 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1747301860}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -5}
+  m_LocalPosition: {x: -0.18, y: 0.97, z: -8.15}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1747301866
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1747301860}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b3b5e3c1875d8aa4b86aa0af71e6a4f1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  left: -0.2
-  right: 0.2
-  top: 0.2
-  bottom: -0.2
 --- !u!1 &1935534570
 GameObject:
   m_ObjectHideFlags: 0
@@ -970,7 +954,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2093124702
 RectTransform:
   m_ObjectHideFlags: 0
