@@ -13,32 +13,29 @@ class Calibration : MonoBehaviour
     private ColorSourceManagerForOpenCV _ColorManager;
 
     List<Point> detectedPos = new List<Point>();
-    Mat temp, image, result, bin;
+    Mat rawTemp, temp, image, result, bin;
 
     private void Start()
     {
         _ColorManager = ColorManager.GetComponent<ColorSourceManagerForOpenCV>();
 
-        temp = new Mat(@"Assets\Resources\Emotionic_e_marker.png", ImreadModes.GrayScale);
-        Cv2.Resize(temp, temp, new Size(100, 100));
-
-        Cv2.ImShow("temp", temp);
+        rawTemp = new Mat(@"Assets\Resources\Emotionic_e_marker.png", ImreadModes.GrayScale);
     }
+
+    private int count = 0;
 
     private void Update()
     {
-        if (!_ColorManager.IsValid)
-        {
-            Debug.Log("kinect is not connected");
-            return;
-        }
-
         image = _ColorManager.ColorImage;
         Cv2.Flip(image, image, FlipMode.Y);
+        // Cv2.Resize(image, image, new Size(image.Size().Width / 3, image.Size().Height / 3));
         bin = new Mat(image.Size(), MatType.CV_32FC1);
         Cv2.CvtColor(image, bin, ColorConversionCodes.BGR2GRAY);
-        
-        result = new Mat(bin.Rows - temp.Rows + 1, bin.Cols- temp.Cols + 1, MatType.CV_32FC1);
+
+        temp = new Mat();
+        Cv2.Resize(rawTemp, temp, new Size(100 + count * 3, 100 + count * 3));
+
+        result = new Mat(bin.Rows - temp.Rows + 1, bin.Cols - temp.Cols + 1, MatType.CV_32FC1);
 
         Cv2.MatchTemplate(bin, temp, result, TemplateMatchModes.CCoeffNormed);
 
@@ -63,7 +60,7 @@ class Calibration : MonoBehaviour
             if (isAdded)
                 y += temp.Height - 1;
         }
-        
+
         Point endpt;
         foreach (Point pos in detectedPos)
         {
@@ -72,14 +69,19 @@ class Calibration : MonoBehaviour
             Cv2.Rectangle(image, pos, endpt, Scalar.Red);
         }
 
-        Cv2.ImShow("result image", image);
-
+        Cv2.ImShow("temp", temp);
+        Cv2.ImShow("result", image);
         detectedPos.Clear();
+
+        count = (count + 1) % 10;
+
+        Debug.Log("----" + count + "----");
     }
 
     private void OnApplicationQuit()
     {
         Cv2.DestroyAllWindows();
     }
+    
 }
 

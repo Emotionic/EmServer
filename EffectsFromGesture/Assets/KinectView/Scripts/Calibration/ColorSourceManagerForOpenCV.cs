@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class ColorSourceManagerForOpenCV : MonoBehaviour
 {
-    public bool IsValid { get; private set; }
     public int ColorWidth { get; private set; }
     public int ColorHeight { get; private set; }
 
@@ -15,7 +14,6 @@ public class ColorSourceManagerForOpenCV : MonoBehaviour
 
     void Start()
     {
-        IsValid = true;
         _Sensor = KinectSensor.GetDefault();
 
         if (_Sensor != null)
@@ -34,8 +32,6 @@ public class ColorSourceManagerForOpenCV : MonoBehaviour
             }
             
         }
-        else
-            IsValid = false;
     }
 
     void Update()
@@ -55,14 +51,7 @@ public class ColorSourceManagerForOpenCV : MonoBehaviour
 
                 frame.Dispose();
                 frame = null;
-                IsValid = true;
             }
-            else
-                IsValid = false;
-        }
-        else
-        {
-            IsValid = false;
         }
     }
 
