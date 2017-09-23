@@ -27,7 +27,7 @@ class Calibration : MonoBehaviour
 
     private void Update()
     {
-        if (_ColorManager.ColorImage.Data == null)
+        if (!_ColorManager.IsValid)
         {
             Debug.Log("kinect is not connected");
             return;
@@ -42,19 +42,26 @@ class Calibration : MonoBehaviour
 
         Cv2.MatchTemplate(bin, temp, result, TemplateMatchModes.CCoeffNormed);
 
-        double threshold = 0.8;
+        double threshold = 0.5;
         Cv2.Threshold(result, result, threshold, 1.0, ThresholdTypes.Tozero);
 
+        bool isAdded;
         for (int y = 0; y < result.Height; y++)
         {
+            isAdded = false;
             for (int x = 0; x < result.Width; x++)
             {
-                if (result.At<int>(y, x) > threshold)
+                if (result.At<int>(y, x) > 0)
                 {
                     Debug.Log(new Point(x, y));
                     detectedPos.Add(new Point(x, y));
+                    x += temp.Width - 1;
+                    isAdded = true;
                 }
             }
+
+            if (isAdded)
+                y += temp.Height - 1;
         }
         
         Point endpt;
@@ -66,6 +73,8 @@ class Calibration : MonoBehaviour
         }
 
         Cv2.ImShow("result image", image);
+
+        detectedPos.Clear();
     }
 
     private void OnApplicationQuit()
