@@ -12,7 +12,7 @@ class Calibration : MonoBehaviour
     
     private ColorSourceManagerForOpenCV _ColorManager;
 
-    Mat image;
+    Mat image, texImage;
 
     private Texture2D texture;
     
@@ -64,11 +64,10 @@ class Calibration : MonoBehaviour
 
         Cv2.BitwiseAnd(channelMat[0], channelMat[1], maskMat);
         Cv2.BitwiseAnd(maskMat, channelMat[2], maskMat);
-
-        src.CopyTo(maskMat, maskMat);
-
+        
         return maskMat;
     }
+
     
     private void Start()
     {
@@ -80,7 +79,7 @@ class Calibration : MonoBehaviour
     private void Update()
     {
         image = _ColorManager.ColorImage;
-        image = image.CvtColor(ColorConversionCodes.BGR2RGB);
+        texImage = image.CvtColor(ColorConversionCodes.BGR2RGB);
 
         if (texture == null)
         {
@@ -88,14 +87,17 @@ class Calibration : MonoBehaviour
             rawImage.texture = texture;
         }
 
-        texture.LoadRawTextureData(image.ImEncode(".bmp"));
+        texture.LoadRawTextureData(texImage.ImEncode(".bmp"));
         texture.Apply();
-        
-        // 青色を検出
-        var skinMat = ColorExtraction(image, ColorConversionCodes.BGR2HSV, 0, 255, 0, 255, 180, 255);
 
-        Cv2.ImShow("result", skinMat);        
-        image.Dispose();
+        // 青色を検出
+        var skinMat = ColorExtraction(image, ColorConversionCodes.BGR2HSV, 90, 110, 200, 255, 200, 255);
+        
+        Cv2.ImShow("image", image);
+        Cv2.ImShow("result", skinMat);
+        
+        texImage.Dispose();
+        // image.Dispose();
         // skinMat.Dispose();
     }
 
