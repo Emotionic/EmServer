@@ -68,6 +68,94 @@ class Calibration : MonoBehaviour
         return maskMat;
     }
 
+    private Point[] DetectFourCorners(Mat src)
+    {
+        Point[] fourCorners = new Point[4];
+        Point q;
+        bool isDetected;
+        Point p = new Point(src.Width / 2, src.Height / 2);
+
+        // up left
+        isDetected = false;
+        q = p;
+        for (; q.X >= 0; q.X--)
+        {
+            for (; q.Y >= 0; q.Y--)
+            {
+                if (src.At<int>(q.X, q.Y) > 0)
+                {
+                    fourCorners[0] = q;
+                    isDetected = true;
+                    break;
+                }
+
+            }
+
+            if (isDetected)
+                break;
+        }
+
+        // up right
+        isDetected = false;
+        q = p;
+        for (; q.X < src.Width; q.X++)
+        {
+            for (; q.Y >= 0; q.Y--)
+            {
+                if (src.At<int>(q.Y, q.X) > 0)
+                {
+                    fourCorners[1] = q;
+                    isDetected = true;
+                    break;
+                }
+
+            }
+
+            if (isDetected)
+                break;
+        }
+
+        // down left
+        isDetected = false;
+        q = p;
+        for (; q.X >= 0; q.X--)
+        {
+            for (; q.Y < src.Height; q.Y++)
+            {
+                if (src.At<int>(q.Y, q.X) > 0)
+                {
+                    fourCorners[2] = q;
+                    isDetected = true;
+                    break;
+                }
+
+            }
+            if (isDetected)
+                break;
+        }
+
+        // down right
+        isDetected = false;
+        q = p;
+        for (; q.X < src.Width; q.X++)
+        {
+            for (; q.Y < src.Height; q.Y++)
+            {
+                if (src.At<int>(q.Y, q.X) > 0)
+                {
+                    fourCorners[3] = q;
+                    isDetected = true;
+                    break;
+                }
+
+            }
+
+            if (isDetected)
+                break;
+        }
+        
+        return fourCorners;
+    }
     
     private void Start()
     {
@@ -93,9 +181,16 @@ class Calibration : MonoBehaviour
         // 青色を検出
         var skinMat = ColorExtraction(image, ColorConversionCodes.BGR2HSV, 90, 110, 200, 255, 200, 255);
         
+        var pos = DetectFourCorners(skinMat);
+        foreach (Point x in pos)
+        {
+            Debug.Log(x);
+            image.PutText("koko", x, HersheyFonts.HersheyScriptComplex, 10, Scalar.Red);
+        }
+
         Cv2.ImShow("image", image);
         Cv2.ImShow("result", skinMat);
-        
+
         texImage.Dispose();
         // image.Dispose();
         // skinMat.Dispose();
