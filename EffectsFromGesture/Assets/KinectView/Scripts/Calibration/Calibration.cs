@@ -87,18 +87,16 @@ class Calibration : MonoBehaviour
             texture = new Texture2D(image.Width, image.Height, TextureFormat.RGB24, false);
             rawImage.texture = texture;
         }
-        
+
         texture.LoadRawTextureData(image.ImEncode(".bmp"));
         texture.Apply();
         
-        image.Dispose();
-
-        // Image.sprite = Sprite.Create(tex, new UnityEngine.Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
-
         // 青色を検出
-        // var skinMat = ColorExtraction(image, ColorConversionCodes.BGR2HSV, 150, 255, 0, 255, 0, 255);
+        var skinMat = ColorExtraction(image, ColorConversionCodes.BGR2HSV, 0, 255, 0, 255, 180, 255);
 
-        // sourceimage
+        Cv2.ImShow("result", skinMat);        
+        image.Dispose();
+        // skinMat.Dispose();
     }
 
     private void OnApplicationQuit()
