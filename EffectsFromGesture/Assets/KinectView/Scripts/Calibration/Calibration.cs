@@ -1,20 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Runtime.InteropServices;
 using UnityEngine;
+using UnityEngine.UI;
 using OpenCvSharp;
-using OpenCvSharp.Util;
 
 class Calibration : MonoBehaviour
 {
     public GameObject ColorManager;
 
+    public RawImage rawImage;
+    
     private ColorSourceManagerForOpenCV _ColorManager;
 
     Mat image;
 
-    public Mat ColorExtraction(InputArray src, ColorConversionCodes code,
+    private Texture2D texture;
+    
+    private Mat ColorExtraction(InputArray src, ColorConversionCodes code,
         int ch1Lower, int ch1Upper, int ch2Lower, int ch2Upper, int ch3Lower, int ch3Upper)
     {
         if (src == null)
@@ -67,22 +69,36 @@ class Calibration : MonoBehaviour
 
         return maskMat;
     }
-
+    
     private void Start()
     {
         _ColorManager = ColorManager.GetComponent<ColorSourceManagerForOpenCV>();
-    }
 
+        // Texture2D tex = Resources.Load("emotionic_e_marker") as Texture2D;
+    }
+    
     private void Update()
     {
         image = _ColorManager.ColorImage;
-        Cv2.Flip(image, image, FlipMode.Y);
+        image = image.CvtColor(ColorConversionCodes.BGR2RGB);
+
+        if (texture == null)
+        {
+            texture = new Texture2D(image.Width, image.Height, TextureFormat.RGB24, false);
+            rawImage.texture = texture;
+        }
+        
+        texture.LoadRawTextureData(image.ImEncode(".bmp"));
+        texture.Apply();
+        
+        image.Dispose();
+
+        // Image.sprite = Sprite.Create(tex, new UnityEngine.Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
 
         // 青色を検出
-        var skinMat = ColorExtraction(image, ColorConversionCodes.BGR2HSV, 150, 255, 0, 255, 0, 255);
+        // var skinMat = ColorExtraction(image, ColorConversionCodes.BGR2HSV, 150, 255, 0, 255, 0, 255);
 
-        Cv2.ImShow("skin", skinMat);
-        Cv2.ImShow("src", image);
+        // sourceimage
     }
 
     private void OnApplicationQuit()

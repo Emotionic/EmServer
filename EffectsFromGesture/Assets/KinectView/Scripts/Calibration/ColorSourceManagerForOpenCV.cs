@@ -47,7 +47,8 @@ public class ColorSourceManagerForOpenCV : MonoBehaviour
                     (uint)(ColorImage.Total() * ColorImage.ElemSize()),
                     ColorImageFormat.Bgra
                     );
-                
+                Cv2.Flip(ColorImage, ColorImage, FlipMode.Y);
+
                 frame.Dispose();
                 frame = null;
             }
