@@ -12,60 +12,77 @@ class Calibration : MonoBehaviour
 
     private ColorSourceManagerForOpenCV _ColorManager;
 
-    List<Point> detectedPos = new List<Point>();
-    Mat temp, image, result, bin;
+    Mat image;
+
+    public Mat ColorExtraction(InputArray src, ColorConversionCodes code,
+        int ch1Lower, int ch1Upper, int ch2Lower, int ch2Upper, int ch3Lower, int ch3Upper)
+    {
+        if (src == null)
+            throw new ArgumentException("src");
+
+        Mat colorMat = new Mat(src.Size(), MatType.CV_8UC3);
+        Cv2.CvtColor(src, colorMat, code);
+
+        Mat lut = new Mat(256, 1, MatType.CV_8UC3);
+
+        int[] lower = { ch1Lower, ch2Lower, ch3Lower };
+        int[] upper = { ch1Upper, ch2Upper, ch3Upper };
+
+        var mat3 = new MatOfByte3(lut);
+
+        var indexer = mat3.GetIndexer();
+
+        for (int i = 0; i < 256; i++)
+        {
+            Vec3b color = indexer[i];
+            byte temp;
+
+            for(int k = 0;k < 3;k++)
+            {
+                if(lower[k] <= upper[k])
+                {
+                    temp = (byte)((lower[k] <= i && i <= upper[k]) ? 255 : 0);
+                }
+                else
+                {
+                    temp = (byte)((i <= upper[k] || lower[k] <= i) ? 255 : 0);
+                }
+
+                color[k] = temp;
+            }
+
+            indexer[i] = color;
+        }
+
+        Cv2.LUT(colorMat, lut, colorMat);
+
+        var channelMat = colorMat.Split();
+
+        var maskMat = new Mat();
+
+        Cv2.BitwiseAnd(channelMat[0], channelMat[1], maskMat);
+        Cv2.BitwiseAnd(maskMat, channelMat[2], maskMat);
+
+        src.CopyTo(maskMat, maskMat);
+
+        return maskMat;
+    }
 
     private void Start()
     {
         _ColorManager = ColorManager.GetComponent<ColorSourceManagerForOpenCV>();
-
-        temp = new Mat(@"Assets\Resources\Emotionic_e_marker.png", ImreadModes.GrayScale);
-        Cv2.Resize(temp, temp, new Size(100, 100));
-
-        Cv2.ImShow("temp", temp);
     }
 
     private void Update()
     {
-        if (_ColorManager.ColorImage.Data == null)
-        {
-            Debug.Log("kinect is not connected");
-            return;
-        }
-
         image = _ColorManager.ColorImage;
         Cv2.Flip(image, image, FlipMode.Y);
-        bin = new Mat(image.Size(), MatType.CV_32FC1);
-        Cv2.CvtColor(image, bin, ColorConversionCodes.BGR2GRAY);
-        
-        result = new Mat(bin.Rows - temp.Rows + 1, bin.Cols- temp.Cols + 1, MatType.CV_32FC1);
 
-        Cv2.MatchTemplate(bin, temp, result, TemplateMatchModes.CCoeffNormed);
+        // 青色を検出
+        var skinMat = ColorExtraction(image, ColorConversionCodes.BGR2HSV, 150, 255, 0, 255, 0, 255);
 
-        double threshold = 0.8;
-        Cv2.Threshold(result, result, threshold, 1.0, ThresholdTypes.Tozero);
-
-        for (int y = 0; y < result.Height; y++)
-        {
-            for (int x = 0; x < result.Width; x++)
-            {
-                if (result.At<int>(y, x) > threshold)
-                {
-                    Debug.Log(new Point(x, y));
-                    detectedPos.Add(new Point(x, y));
-                }
-            }
-        }
-        
-        Point endpt;
-        foreach (Point pos in detectedPos)
-        {
-            endpt = new Point(pos.X + temp.Rows, pos.Y + temp.Cols);
-
-            Cv2.Rectangle(image, pos, endpt, Scalar.Red);
-        }
-
-        Cv2.ImShow("result image", image);
+        Cv2.ImShow("skin", skinMat);
+        Cv2.ImShow("src", image);
     }
 
     private void OnApplicationQuit()
