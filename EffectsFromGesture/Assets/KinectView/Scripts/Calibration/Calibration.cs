@@ -29,7 +29,22 @@ class Calibration : MonoBehaviour
     private Mat rawTemp, temp, image, result, bin;
     
     private int count = 0;
-    private double threshold = 0.5;
+    private double threshold = 0.4;
+
+    private void Gamma(InputArray src, OutputArray dst, double gamma)
+    {
+        byte[] lut = new byte[256];
+
+        for (int i = 0; i < 256; i++)
+        {
+            lut[i] = (byte)(Math.Pow(i / 255.0, 1.0 / gamma) * 255.0);
+        }
+
+        Mat lutMat = new Mat(1, 256, MatType.CV_8UC1, lut);
+
+        Cv2.LUT(src, lutMat, dst);
+    }
+
 
     private void Start()
     {
@@ -47,6 +62,8 @@ class Calibration : MonoBehaviour
 
         // 左右反転していたので元に戻す
         Cv2.Flip(image, image, FlipMode.Y);
+
+        Gamma(image, image, 1.2);
         
         // Kinect画像を白黒に変換
         bin = new Mat(image.Size(), MatType.CV_32FC1);
@@ -54,7 +71,7 @@ class Calibration : MonoBehaviour
 
         // マーカーを拡大縮小
         temp = new Mat();
-        Cv2.Resize(rawTemp, temp, new Size(100 + count * 3, 100 + count * 3));
+        Cv2.Resize(rawTemp, temp, new Size(50 + count * 3, 50 + count * 3));
 
         // 検出結果用Matの準備
         result = new Mat(bin.Rows - temp.Rows + 1, bin.Cols - temp.Cols + 1, MatType.CV_32FC1);
@@ -94,6 +111,7 @@ class Calibration : MonoBehaviour
 
             Cv2.Rectangle(image, pos, endpt, Scalar.Red);
         }
+        // Cv2.Resize(image, image, new Size(640, 480));
 
         // マーカーと検出結果を表示
         Cv2.ImShow("temp", temp);
@@ -103,7 +121,7 @@ class Calibration : MonoBehaviour
         detectedPos.Clear();
 
         // マーカーの大きさを変えて再度検出
-        count = (count + 1) % 10;
+        count = (count + 1) % 20;
 
         Debug.Log("----" + count + "----");
     }
