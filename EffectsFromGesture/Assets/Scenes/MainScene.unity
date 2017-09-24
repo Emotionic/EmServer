@@ -894,6 +894,34 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1858317209
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 1858317210}
+  m_Layer: 0
+  m_Name: FireWorksLaunchPad
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1858317210
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1858317209}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 3.16, y: -3.31, z: -1.43}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 11
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1935534570
 GameObject:
   m_ObjectHideFlags: 0
@@ -925,6 +953,8 @@ MonoBehaviour:
   GestureManager: {fileID: 1200099052}
   BodySourceManager: {fileID: 689630467}
   Trail: {fileID: 1059535331452628, guid: e9f24956af1d56e4ca1ab1e343118b8e, type: 2}
+  FireWorks: {fileID: 1580997510412864, guid: 31b9a7ca401187e499ade0705075d905, type: 2}
+  LaunchPad: {fileID: 1858317209}
 --- !u!4 &1935534572
 Transform:
   m_ObjectHideFlags: 0

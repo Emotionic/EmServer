@@ -21,6 +21,10 @@ namespace Assets.KinectView.Scripts
 
         public GameObject Trail;
 
+        public GameObject FireWorks;
+
+        public GameObject LaunchPad;
+
         private WSServer _WSServer;
 
         private Camera _MainCamera;
@@ -129,6 +133,11 @@ namespace Assets.KinectView.Scripts
             }
 
             _RbColor.Update();
+
+            if(Input.GetKey(KeyCode.F))
+            {
+                Instantiate(FireWorks, LaunchPad.transform);
+            }
         }
 
         private void _GestureManager_GestureDetected(KeyValuePair<Gesture, DiscreteGestureResult> result, ulong id)
