@@ -662,7 +662,7 @@ PlayerSettings:
     UNet: 1
     Unity_Ads: 0
   facebookSdkVersion: 7.9.4
-  apiCompatibilityLevel: 2
+  apiCompatibilityLevel: 3
   cloudProjectId: 5c85b8a9-ed3f-497d-99e9-31673ee9ad14
   projectName: EffectsFromGesture
   organizationId: dicenull

@@ -12,161 +12,111 @@ class Calibration : MonoBehaviour
     
     private ColorSourceManagerForOpenCV _ColorManager;
 
-    Mat image, texImage;
+    Mat image, texImage, dstImage;
 
     private Texture2D texture;
-    
-    private Mat ColorExtraction(InputArray src, ColorConversionCodes code,
+
+    public void ColorExtraction(Mat srcImage, Mat dstImage, ColorConversionCodes code,
         int ch1Lower, int ch1Upper, int ch2Lower, int ch2Upper, int ch3Lower, int ch3Upper)
     {
-        if (src == null)
-            throw new ArgumentException("src");
+        if (srcImage == null)
+            throw new ArgumentNullException("srcImage");
+        else if (dstImage == null)
+            throw new ArgumentNullException("dstImage");
 
-        Mat colorMat = new Mat(src.Size(), MatType.CV_8UC3);
-        Cv2.CvtColor(src, colorMat, code);
 
-        Mat lut = new Mat(256, 1, MatType.CV_8UC3);
+        Mat colorImage;
+        Mat[] ch3sImage = new Mat[3];
+        Mat maskImage;
 
-        int[] lower = { ch1Lower, ch2Lower, ch3Lower };
-        int[] upper = { ch1Upper, ch2Upper, ch3Upper };
+        int i, k;
+        int[] lower = new int[3];
+        int[] upper = new int[3];
+        int[] val = new int[3];
 
-        var mat3 = new MatOfByte3(lut);
+        Mat lut;
 
-        var indexer = mat3.GetIndexer();
+        colorImage = new Mat(srcImage.Size(), srcImage.Depth(), srcImage.Channels());
+        Cv2.CvtColor(srcImage, colorImage, code);
 
-        for (int i = 0; i < 256; i++)
+        lut = new Mat(256, 1, MatType.CV_8UC3);
+
+        lower[0] = ch1Lower;
+        lower[1] = ch2Lower;
+        lower[2] = ch3Lower;
+
+        upper[0] = ch1Upper;
+        upper[1] = ch2Upper;
+        upper[2] = ch3Upper;
+
+        for (i = 0; i < 256; i++)
         {
-            Vec3b color = indexer[i];
-            byte temp;
-
-            for(int k = 0;k < 3;k++)
+            for (k = 0; k < 3; k++)
             {
-                if(lower[k] <= upper[k])
+                if (lower[k] <= upper[k])
                 {
-                    temp = (byte)((lower[k] <= i && i <= upper[k]) ? 255 : 0);
+                    if ((lower[k] <= i) && (i <= upper[k]))
+                    {
+                        val[k] = 255;
+                    }
+                    else
+                    {
+                        val[k] = 0;
+                    }
                 }
                 else
                 {
-                    temp = (byte)((i <= upper[k] || lower[k] <= i) ? 255 : 0);
+                    if ((i <= upper[k]) || (lower[k] <= i))
+                    {
+                        val[k] = 255;
+                    }
+                    else
+                    {
+                        val[k] = 0;
+                    }
                 }
-
-                color[k] = temp;
             }
-
-            indexer[i] = color;
+            lut.Set(i, new Scalar(val[0], val[1], val[2]));
         }
 
-        Cv2.LUT(colorMat, lut, colorMat);
+        Cv2.LUT(colorImage, colorImage, lut);
+        lut.Release();
 
-        var channelMat = colorMat.Split();
+        ch3sImage[0] = new Mat(colorImage.Size(), colorImage.Depth(), 1);
+        ch3sImage[1] = new Mat(colorImage.Size(), colorImage.Depth(), 1);
+        ch3sImage[2] = new Mat(colorImage.Size(), colorImage.Depth(), 1);
 
-        var maskMat = new Mat();
+        Cv2.Split(colorImage, out ch3sImage);
 
-        Cv2.BitwiseAnd(channelMat[0], channelMat[1], maskMat);
-        Cv2.BitwiseAnd(maskMat, channelMat[2], maskMat);
+        maskImage = new Mat(colorImage.Size(), colorImage.Depth(), 1);
+        Cv2.BitwiseAnd(ch3sImage[0], ch3sImage[1], maskImage);
+        Cv2.BitwiseAnd(maskImage, ch3sImage[2], maskImage);
         
-        return maskMat;
+        // Cv2.Zero(dstImage);
+        srcImage.CopyTo(dstImage, maskImage);
+
+        colorImage.Release();
+        ch3sImage[0].Release();
+        ch3sImage[1].Release();
+        ch3sImage[2].Release();
+        maskImage.Release();
     }
 
-    private Point[] DetectFourCorners(Mat src)
-    {
-        Point[] fourCorners = new Point[4];
-        Point q;
-        bool isDetected;
-        Point p = new Point(src.Width / 2, src.Height / 2);
-
-        // up left
-        isDetected = false;
-        q = p;
-        for (; q.X >= 0; q.X--)
-        {
-            for (; q.Y >= 0; q.Y--)
-            {
-                if (src.At<int>(q.X, q.Y) > 0)
-                {
-                    fourCorners[0] = q;
-                    isDetected = true;
-                    break;
-                }
-
-            }
-
-            if (isDetected)
-                break;
-        }
-
-        // up right
-        isDetected = false;
-        q = p;
-        for (; q.X < src.Width; q.X++)
-        {
-            for (; q.Y >= 0; q.Y--)
-            {
-                if (src.At<int>(q.Y, q.X) > 0)
-                {
-                    fourCorners[1] = q;
-                    isDetected = true;
-                    break;
-                }
-
-            }
-
-            if (isDetected)
-                break;
-        }
-
-        // down left
-        isDetected = false;
-        q = p;
-        for (; q.X >= 0; q.X--)
-        {
-            for (; q.Y < src.Height; q.Y++)
-            {
-                if (src.At<int>(q.Y, q.X) > 0)
-                {
-                    fourCorners[2] = q;
-                    isDetected = true;
-                    break;
-                }
-
-            }
-            if (isDetected)
-                break;
-        }
-
-        // down right
-        isDetected = false;
-        q = p;
-        for (; q.X < src.Width; q.X++)
-        {
-            for (; q.Y < src.Height; q.Y++)
-            {
-                if (src.At<int>(q.Y, q.X) > 0)
-                {
-                    fourCorners[3] = q;
-                    isDetected = true;
-                    break;
-                }
-
-            }
-
-            if (isDetected)
-                break;
-        }
-        
-        return fourCorners;
-    }
-    
     private void Start()
     {
         _ColorManager = ColorManager.GetComponent<ColorSourceManagerForOpenCV>();
 
+        dstImage = new Mat();
         // Texture2D tex = Resources.Load("emotionic_e_marker") as Texture2D;
     }
     
     private void Update()
     {
         image = _ColorManager.ColorImage;
+
+        if (image == null)
+            return;
+
         texImage = image.CvtColor(ColorConversionCodes.BGR2RGB);
 
         if (texture == null)
@@ -179,21 +129,13 @@ class Calibration : MonoBehaviour
         texture.Apply();
 
         // 青色を検出
-        var skinMat = ColorExtraction(image, ColorConversionCodes.BGR2HSV, 90, 110, 200, 255, 200, 255);
+        ColorExtraction(image, dstImage, ColorConversionCodes.BGR2HSV, 90, 110, 200, 255, 200, 255);
         
-        var pos = DetectFourCorners(skinMat);
-        foreach (Point x in pos)
-        {
-            Debug.Log(x);
-            image.PutText("koko", x, HersheyFonts.HersheyScriptComplex, 10, Scalar.Red);
-        }
-
         Cv2.ImShow("image", image);
-        Cv2.ImShow("result", skinMat);
+        Cv2.ImShow("result", dstImage);
 
         texImage.Dispose();
         // image.Dispose();
-        // skinMat.Dispose();
     }
 
     private void OnApplicationQuit()

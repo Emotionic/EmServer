@@ -8,6 +8,8 @@ public class ColorSourceManagerForOpenCV : MonoBehaviour
     public int ColorHeight { get; private set; }
 
     public Mat ColorImage { get; private set; }
+
+    public bool isInit { get; private set; }
     
     private KinectSensor _Sensor;
     private ColorFrameReader _Reader;
@@ -51,6 +53,8 @@ public class ColorSourceManagerForOpenCV : MonoBehaviour
 
                 frame.Dispose();
                 frame = null;
+
+                isInit = true;
             }
         }
     }
