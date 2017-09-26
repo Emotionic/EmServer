@@ -2,14 +2,18 @@
 using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using OpenCvSharp;
 using System.Linq;
 
 class Calibration : MonoBehaviour
 {
+    public static Vector3 CameraPosition;
+
     public GameObject ColorManager;
 
     public RawImage rawImage;
+    public GameObject Cube;
     
     private ColorSourceManagerForOpenCV _ColorManager;
 
@@ -166,13 +170,14 @@ class Calibration : MonoBehaviour
         _ColorManager = ColorManager.GetComponent<ColorSourceManagerForOpenCV>();
 
         dstImage = new Mat();
+        image = new Mat();
         // Texture2D tex = Resources.Load("emotionic_e_marker") as Texture2D;
     }
     
     private void Update()
     {
         image = _ColorManager.ColorImage;
-
+        
         if (image == null)
             return;
 
@@ -188,28 +193,50 @@ class Calibration : MonoBehaviour
         texture.Apply();
 
         // 青色を検出
-        var skinMat = ColorExtraction(image, ColorConversionCodes.BGR2HSV, 110, 130, 0, 255, 0, 255);
+        var skinMat = ColorExtraction(image, ColorConversionCodes.BGR2HSV, 90, 120, 0, 255, 200, 255);
         // ColorExtraction(image, dstImage, ColorConversionCodes.BGR2HSV, 0, 255, 0, 255, 0, 255);
 
         ConnectedComponents cc = Cv2.ConnectedComponentsEx(skinMat);
+        
+        var largestBlob = cc.GetLargestBlob();
+        
+        image.Rectangle(largestBlob.Rect, Scalar.Red);
+        image.DrawMarker((int)largestBlob.Centroid.X, (int)largestBlob.Centroid.Y, Scalar.Red);
 
-        Cv2.PutText(image, x.ToString(), new Point(10, 180), HersheyFonts.HersheyComplexSmall, 1, new Scalar(255, 0, 255));
-        foreach (var blob in cc.Blobs.Skip(1))
+        // シーン遷移
+        if (count < 0)
         {
-            if (blob.Area < 100)
-                continue;
-
-            image.Rectangle(blob.Rect, Scalar.Red);
+            SceneManager.LoadScene("MainScene");
         }
 
-        Cv2.ImShow("image", image);
-        Cv2.ImShow("result", skinMat);
+        Cv2.PutText(image, "left : " + largestBlob.Left, new Point(10, 200), HersheyFonts.HersheyComplexSmall, 1, new Scalar(255, 0, 255));
+        Cv2.PutText(image, "right : " + (largestBlob.Left + largestBlob.Width), new Point(10, 220), HersheyFonts.HersheyComplexSmall, 1, new Scalar(255, 0, 255));
+        Cv2.PutText(image, "top : " + largestBlob.Top, new Point(10, 240), HersheyFonts.HersheyComplexSmall, 1, new Scalar(255, 0, 255));
+        Cv2.PutText(image, "bottom : " + (largestBlob.Top + largestBlob.Height), new Point(10, 260), HersheyFonts.HersheyComplexSmall, 1, new Scalar(255, 0, 255));
+        Cv2.PutText(image, "height : " + largestBlob.Height, new Point(10, 280), HersheyFonts.HersheyComplexSmall, 1, new Scalar(255, 0, 255));
+        Cv2.PutText(image, "width: " + largestBlob.Width, new Point(10, 300), HersheyFonts.HersheyComplexSmall, 1, new Scalar(255, 0, 255));
+        Cv2.PutText(image, "centroid : " + largestBlob.Centroid, new Point(10, 320), HersheyFonts.HersheyComplexSmall, 1, new Scalar(255, 0, 255));
+        
+        Cv2.PutText(image, "camera pos : " + Camera.main.transform.position, new Point(10, 340), HersheyFonts.HersheyComplexSmall, 1, new Scalar(255, 0, 255));
+
+        // Cv2.ImShow("result", skinMat);
+        
+        // Cv2.ImShow("image", image);
+
+        Point2d pos = new Point2d(largestBlob.Centroid.X - (1920 - Screen.width) / 2, largestBlob.Centroid.Y - (1080 - Screen.height) / 2);
+        
+        int X = largestBlob.Height;
+        CameraPosition = new Vector3(
+            (float)pos.X - Screen.width / 2,
+            Screen.height / 2 - (float)pos.Y,
+            -X);
+
+        Camera.main.transform.position = CameraPosition;
 
         texImage.Dispose();
-        // image.Dispose();
-        x = (x + 1) % 245;
+        count--;
     }
-    int x = 0;
+    private int count = 100;
 
     private void OnApplicationQuit()
     {
