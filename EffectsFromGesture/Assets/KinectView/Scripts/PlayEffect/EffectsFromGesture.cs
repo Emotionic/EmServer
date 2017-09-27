@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
 using Windows.Kinect;
@@ -21,11 +22,15 @@ namespace Assets.KinectView.Scripts
 
         public GameObject Trail;
 
+        public GameObject FireWorks;
+
+        public GameObject LaunchPad;
+
         private WSServer _WSServer;
 
         private Camera _MainCamera;
 
-        private Dictionary<string, EffectOption> _EffectsCustomize;
+        private CustomData _Customize;
 
         /// <summary>
         /// エフェクト名
@@ -48,6 +53,8 @@ namespace Assets.KinectView.Scripts
         private Dictionary<string, EffectAttributes> _GestureFromEffectAttributes;
 
         private RainbowColor _RbColor;
+
+        private float _StartedTime;
 
         // Use this for initialization
         void Start()
@@ -78,11 +85,16 @@ namespace Assets.KinectView.Scripts
             _GestureFromEffectAttributes["Punch_Right"] = new EffectAttributes(0.2, JointType.HandLeft, _EffectNames[1]);
 
             _RbColor = new RainbowColor(0, 0.001f);
+
+            // 開始時間の記録
+            _StartedTime = Time.realtimeSinceStartup;
+
         }
 
         private void _WSServer_Customize(CustomData data)
         {
-            _EffectsCustomize = JsonUtility.FromJson<Serialization<string, EffectOption>>(data.EffectsCustomize).ToDictionary();
+            Debug.Log("CUSTOMIZED");
+            _Customize = data;
         }
 
         private void _WSServer_Like(LikeData data)
@@ -129,6 +141,22 @@ namespace Assets.KinectView.Scripts
             }
 
             _RbColor.Update();
+
+            // 時間制限
+            if (_Customize.TimeLimit != 0)
+            {
+                if (Time.realtimeSinceStartup - _StartedTime <= 0)
+                {
+                    // 時間経過 -> シーン遷移
+                    // SceneManager.LoadScene("FinishedScene");
+                }
+            }
+            
+
+            if(Input.GetKey(KeyCode.F))
+            {
+                Instantiate(FireWorks, LaunchPad.transform);
+            }
         }
 
         private void _GestureManager_GestureDetected(KeyValuePair<Gesture, DiscreteGestureResult> result, ulong id)
@@ -164,16 +192,16 @@ namespace Assets.KinectView.Scripts
             
             for (int i = 0; i < joints.Length; i++)
             {
-                if (_WSServer != null && _WSServer.IsConnected && !_EffectsCustomize.ContainsKey("Joint_" + joints[i].name))
-                {
-                    if (joints[i].transform.Find(Trail.name) != null)
-                    {
-                        Destroy(joints[i].transform.Find(Trail.name));
-                    }
-                    continue;
-                }
+                //if (_WSServer != null && _WSServer.IsConnected && !_EffectsCustomize.ContainsKey("Joint_" + joints[i].name))
+                //{
+                //    if (joints[i].transform.Find(Trail.name) != null)
+                //    {
+                //        Destroy(joints[i].transform.Find(Trail.name));
+                //    }
+                //    continue;
+                //}
                 
-                EffectOption eOption = (_WSServer != null && _WSServer.IsConnected) ? _EffectsCustomize["Joint_" + joints[i].name] : new EffectOption("LINE", Color.black, true);
+                // EffectOption eOption = (_WSServer != null && _WSServer.IsConnected) ? _EffectsCustomize["Joint_" + joints[i].name] : new EffectOption("LINE", Color.black, true);
 
                 Transform trail;
                 if(!joints[i].transform.Find(Trail.name))
@@ -189,23 +217,29 @@ namespace Assets.KinectView.Scripts
                     trail.Find("NG Hand Particle").GetComponent<ParticleSystem>()
                     };
 
-                if (eOption.isRainbow)
+                tr.startColor = _RbColor.Rainbow;
+                foreach (ParticleSystem ps in pss)
                 {
-                    tr.startColor = _RbColor.Rainbow;
-                    foreach(ParticleSystem ps in pss)
-                    {
-                        ps.startColor = _RbColor.Rainbow;
-                    }
+                    ps.startColor = _RbColor.Rainbow;
                 }
-                else
-                {
-                    tr.startColor = eOption.Color;
-                    foreach(ParticleSystem ps in pss)
-                    {
-                        ps.startColor = eOption.Color;
-                    }
-                }
-                
+
+                //if (eOption.isRainbow)
+                //{
+                //    tr.startColor = _RbColor.Rainbow;
+                //    foreach(ParticleSystem ps in pss)
+                //    {
+                //        ps.startColor = _RbColor.Rainbow;
+                //    }
+                //}
+                //else
+                //{
+                //    tr.startColor = eOption.Color;
+                //    foreach(ParticleSystem ps in pss)
+                //    {
+                //        ps.startColor = eOption.Color;
+                //    }
+                //}
+
             }
 
             // trail prefab instantiate
@@ -217,7 +251,17 @@ namespace Assets.KinectView.Scripts
                 obj.name = "Trail";
             }
             */
-            
+
+        }
+
+        private Color FloatListToColor(List<float> _list)
+        {
+            var col = new Color();
+            col.r = _list[0];
+            col.g = _list[1];
+            col.b = _list[2];
+            col.a = _list[3];
+            return col;
         }
         
     }

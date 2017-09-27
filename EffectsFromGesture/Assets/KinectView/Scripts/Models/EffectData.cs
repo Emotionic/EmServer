@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 
-[System.Serializable]
 public class EffectData
 {
 
@@ -9,6 +8,7 @@ public class EffectData
     public Quaternion Rotation; // エフェクトの回転
     public Vector3 Scale; // エフェクトの大きさ
     public Color Color; // エフェクトの色
+    public bool IsRainbow; // 虹色かどうか
     public bool DoLoop; // エフェクトをループ再生するか
 
 }
