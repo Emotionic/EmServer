@@ -11,16 +11,11 @@ class Calibration : MonoBehaviour
     public static Vector3 CameraPosition;
 
     public GameObject ColorManager;
-
-    public RawImage rawImage;
-    public GameObject Cube;
     
     private ColorSourceManagerForOpenCV _ColorManager;
 
-    Mat image, texImage, dstImage;
-
-    private Texture2D texture;
-
+    Mat image;
+    
     private Mat ColorExtraction(InputArray src, ColorConversionCodes code,
         int ch1Lower, int ch1Upper, int ch2Lower, int ch2Upper, int ch3Lower, int ch3Upper)
     {
@@ -76,10 +71,8 @@ class Calibration : MonoBehaviour
     private void Start()
     {
         _ColorManager = ColorManager.GetComponent<ColorSourceManagerForOpenCV>();
-
-        dstImage = new Mat();
+        
         image = new Mat();
-        // Texture2D tex = Resources.Load("emotionic_e_marker") as Texture2D;
     }
     
     private void Update()
@@ -88,24 +81,13 @@ class Calibration : MonoBehaviour
         
         if (image == null)
             return;
-
-        texImage = image.CvtColor(ColorConversionCodes.BGR2RGB);
-
-        if (texture == null)
-        {
-            texture = new Texture2D(image.Width, image.Height, TextureFormat.RGB24, false);
-            rawImage.texture = texture;
-        }
-
-        texture.LoadRawTextureData(texImage.ImEncode(".bmp"));
-        texture.Apply();
-
+        
         // 青色を検出
         var skinMat = ColorExtraction(image, ColorConversionCodes.BGR2HSV, 90, 120, 0, 255, 200, 255);
         
         ConnectedComponents cc = Cv2.ConnectedComponentsEx(skinMat);
 
-        if (cc.LabelCount <= 0)
+        if (cc.LabelCount <= 1)
             return;
         
         var largestBlob = cc.GetLargestBlob();
@@ -116,6 +98,7 @@ class Calibration : MonoBehaviour
             SceneManager.LoadScene("MainScene");
         }
         
+        // カメラの座標を合わせてキャリブレーション
         Point2d pos = new Point2d(largestBlob.Centroid.X - (1920 - Screen.width) / 2, largestBlob.Centroid.Y - (1080 - Screen.height) / 2);
         
         int X = largestBlob.Height;
@@ -126,10 +109,9 @@ class Calibration : MonoBehaviour
 
         CameraPosition /= 100f;
         
-        texImage.Dispose();
         count--;
     }
 
-    private int count = 100;
+    private int count = 25;
 }
 
