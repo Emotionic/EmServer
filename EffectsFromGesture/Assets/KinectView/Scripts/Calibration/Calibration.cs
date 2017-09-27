@@ -194,11 +194,13 @@ class Calibration : MonoBehaviour
 
         // 青色を検出
         var skinMat = ColorExtraction(image, ColorConversionCodes.BGR2HSV, 90, 120, 0, 255, 200, 255);
-        // ColorExtraction(image, dstImage, ColorConversionCodes.BGR2HSV, 0, 255, 0, 255, 0, 255);
-
+        
         ConnectedComponents cc = Cv2.ConnectedComponentsEx(skinMat);
         
         var largestBlob = cc.GetLargestBlob();
+
+        if (largestBlob == null)
+            return;
         
         image.Rectangle(largestBlob.Rect, Scalar.Red);
         image.DrawMarker((int)largestBlob.Centroid.X, (int)largestBlob.Centroid.Y, Scalar.Red);
@@ -231,6 +233,7 @@ class Calibration : MonoBehaviour
             Screen.height / 2 - (float)pos.Y,
             -X);
 
+        CameraPosition /= 100f;
         Camera.main.transform.position = CameraPosition;
 
         texImage.Dispose();
