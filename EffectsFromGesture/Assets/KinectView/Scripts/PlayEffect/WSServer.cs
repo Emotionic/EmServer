@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using WebSocketSharp;
+using Newtonsoft.Json;
 using UnityEngine.SceneManagement;
 
 public class WSServer : MonoBehaviour
@@ -25,7 +26,8 @@ public class WSServer : MonoBehaviour
     private WebSocket ws = null;
     private Queue msgQueue;
     private byte[] QRData;
-    private string IP;
+    private string Address = "localhost";
+    private string outerAddress; // 外から見たアドレス(IP)
     private bool initCustomized = false;
     private float waitBeforePerform = 10;
     private CustomData customData;
@@ -34,14 +36,10 @@ public class WSServer : MonoBehaviour
 
     public void Connect()
     {
-        var _ip = _Canvas.transform.Find("InputIP").GetComponent<InputField>().text;
-        if (!string.IsNullOrEmpty(_ip))
-            IP = _ip;
-
         var res = RequestHTTP(Method.GET, "emserver");
         if (res != "ok") throw new Exception("Cannot connect EmServerWS");
 
-        ws = new WebSocket("ws://" + IP + "/ws");
+        ws = new WebSocket("ws://" + Address + "/ws");
 
         ws.OnOpen += (sender, e) =>
         {
@@ -89,7 +87,7 @@ public class WSServer : MonoBehaviour
         SceneManager.activeSceneChanged += (prev, next) =>
         {
             _Canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
-            _Canvas.transform.Find("LabelIP").GetComponent<Text>().text = IP;
+            _Canvas.transform.Find("LabelIP").GetComponent<Text>().text = outerAddress;
 
             var texture = new Texture2D(256, 256, TextureFormat.RGB24, false);
             texture.LoadRawTextureData(QRData);
@@ -119,11 +117,6 @@ public class WSServer : MonoBehaviour
             SceneManager.LoadScene("MainScene");
         }
 
-        if (!IsConnected && Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.Return))
-        {
-            Connect();
-        }
-
         if (!IsConnected)
             return;
 
@@ -140,18 +133,13 @@ public class WSServer : MonoBehaviour
                     {
                         /* IP */
                         case "IP":
-                            IP = msg[2];
-                            _Canvas.transform.Find("LabelIP").GetComponent<Text>().text = IP;
+                            outerAddress = msg[2];
+                            _Canvas.transform.Find("LabelIP").GetComponent<Text>().text = msg[2];
                             break;
 
                         /* パフォーマー */
                         case "CALIB":
                             // キャリブレーションの開始
-                            if (!initCustomized)
-                            {
-                                customData = CustomData.GetDefault();
-                            }
-
                             snd = "PERFORMER\n";
                             snd += "CALIB_OK\n";
                             snd += JsonUtility.ToJson(customData);
@@ -162,7 +150,7 @@ public class WSServer : MonoBehaviour
 
                         case "CUSTOMIZE":
                             // カスタマイズ
-                            customData = JsonUtility.FromJson<CustomData>(msg[2]);
+                            customData = JsonConvert.DeserializeObject<CustomData>(msg[2]);
                             Customize(customData);
                             Debug.Log("CUSTOMDATA");
                             ReplyAR();
@@ -208,8 +196,6 @@ public class WSServer : MonoBehaviour
     {
         var snd = "";
         var ardata = new ARData();
-        ardata.MarkerPos = new[] { Vector3.zero };
-        ardata.MarkerScale = Vector3.zero;
         ardata.EnabledEffects = customData.EnabledLikes;
         ardata.isLikeEnabled = customData.JoinType % 10 == 1;
 
@@ -222,7 +208,7 @@ public class WSServer : MonoBehaviour
 
     private string RequestHTTP(Method method, string action, string value = null)
     {
-        string url = "http://" + IP + "/" + action;
+        string url = "http://" + Address + "/" + action;
 
         try
         {
