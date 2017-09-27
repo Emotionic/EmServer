@@ -30,7 +30,5 @@ public class ColorSourceView : MonoBehaviour
         }
         
         gameObject.GetComponent<Renderer>().material.mainTexture = _ColorManager.Texture;
-
-        Debug.Log("Cube : " + gameObject.transform.localScale);
     }
 }
