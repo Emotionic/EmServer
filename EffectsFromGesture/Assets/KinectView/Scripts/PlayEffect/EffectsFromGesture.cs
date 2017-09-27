@@ -26,6 +26,8 @@ namespace Assets.KinectView.Scripts
 
         public GameObject LaunchPad;
 
+        public GameObject Cube;
+
         private WSServer _WSServer;
 
         private Camera _MainCamera;
@@ -141,17 +143,20 @@ namespace Assets.KinectView.Scripts
             }
 
             _RbColor.Update();
+            
 
             // 時間制限
             if (_Customize.TimeLimit != 0)
             {
-                if (Time.realtimeSinceStartup - _StartedTime <= 0)
+                if ((_Customize.TimeLimit * 60) - (Time.realtimeSinceStartup - _StartedTime) <= 0)
                 {
                     // 時間経過 -> シーン遷移
-                    // SceneManager.LoadScene("FinishedScene");
+                    SceneManager.LoadScene("FinishScene");
                 }
             }
-            
+
+            // 残像切り替え
+            Cube.SetActive(_Customize.IsZNZOVisibled);
 
             if(Input.GetKey(KeyCode.F))
             {

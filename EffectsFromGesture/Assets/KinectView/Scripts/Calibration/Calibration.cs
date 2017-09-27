@@ -95,7 +95,7 @@ class Calibration : MonoBehaviour
         // シーン遷移
         if (count < 0)
         {
-            SceneManager.LoadScene("MainScene");
+            SceneManager.LoadScene("WaitPerformer");
         }
         
         // カメラの座標を合わせてキャリブレーション

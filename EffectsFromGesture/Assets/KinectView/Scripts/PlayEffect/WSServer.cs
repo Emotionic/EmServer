@@ -96,16 +96,18 @@ public class WSServer : MonoBehaviour
             _Canvas.transform.Find("QR").GetComponent<Image>().sprite = Sprite.Create(texture, new Rect(0, 0, 256, 256), Vector2.zero);
             Canvas.ForceUpdateCanvases();
         };
+
+        Connect();
         
     }
 
     private void Update()
     {
         // 開始カウントダウン -> 遷移
-        if (initCustomized && SceneManager.GetActiveScene().name == "Calibration")
+        if (initCustomized && SceneManager.GetActiveScene().name == "WaitPerformer")
         {
             waitBeforePerform -= Time.deltaTime;
-            _Canvas.transform.Find("LabelIP").GetComponent<Text>().text = ((int)waitBeforePerform).ToString();
+            _Canvas.transform.Find("LabelIP").GetComponent<Text>().text = waitBeforePerform <= 0 ? "Loading..." : ((int)waitBeforePerform).ToString();
             if (waitBeforePerform <= 0)
             {
                 SceneManager.LoadScene("MainScene");
@@ -142,8 +144,6 @@ public class WSServer : MonoBehaviour
                             // キャリブレーションの開始
                             snd = "PERFORMER\n";
                             snd += "CALIB_OK\n";
-                            snd += JsonUtility.ToJson(customData);
-
                             ws.Send(snd);
 
                             break;
@@ -151,12 +151,14 @@ public class WSServer : MonoBehaviour
                         case "CUSTOMIZE":
                             // カスタマイズ
                             customData = JsonConvert.DeserializeObject<CustomData>(msg[2]);
-                            Customize(customData);
                             Debug.Log("CUSTOMDATA");
                             ReplyAR();
                             if (!initCustomized)
                             {
                                 initCustomized = true;
+                            } else
+                            {
+                                Customize(customData);
                             }
 
                             break;

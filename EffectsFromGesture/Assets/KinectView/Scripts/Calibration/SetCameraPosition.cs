@@ -11,9 +11,5 @@ public class SetCameraPosition : MonoBehaviour
         Debug.Log(Calibration.CameraPosition);
         Debug.Log(Camera.main.transform.position);
     }
-
-    private void Update()
-    {
-        Debug.Log(Camera.main.transform.position);
-    }
+    
 }

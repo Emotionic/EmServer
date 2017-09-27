@@ -895,6 +895,9 @@ MonoBehaviour:
   GestureManager: {fileID: 1200099052}
   BodySourceManager: {fileID: 689630467}
   Trail: {fileID: 1059535331452628, guid: e9f24956af1d56e4ca1ab1e343118b8e, type: 2}
+  FireWorks: {fileID: 0}
+  LaunchPad: {fileID: 0}
+  Cube: {fileID: 719518876}
 --- !u!4 &1935534572
 Transform:
   m_ObjectHideFlags: 0
