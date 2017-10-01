@@ -322,7 +322,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58efaa5188f353d4192bed7a8deb8386, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  IsBodyView: 0
+  IsBodyView: 1
   BoneMaterial: {fileID: 2100000, guid: f2ea145c63353784985576f08398a815, type: 2}
   BodySourceManager: {fileID: 689630467}
   ConvertCamera: {fileID: 814211668}
@@ -776,6 +776,7 @@ GameObject:
   - component: {fileID: 1747301862}
   - component: {fileID: 1747301861}
   - component: {fileID: 1747301866}
+  - component: {fileID: 1747301867}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -847,7 +848,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1747301860}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.6, y: 1.4, z: -4.7}
+  m_LocalPosition: {x: 0, y: 0, z: -4.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -864,6 +865,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a94bf11980317ea43946df15ddb8cddf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1747301867
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1747301860}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f25504797b8f3b4884a758bfb78602f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _MainCamera: {fileID: 1747301864}
 --- !u!1 &1935534570
 GameObject:
   m_ObjectHideFlags: 0
@@ -895,8 +908,7 @@ MonoBehaviour:
   GestureManager: {fileID: 1200099052}
   BodySourceManager: {fileID: 689630467}
   Trail: {fileID: 1059535331452628, guid: e9f24956af1d56e4ca1ab1e343118b8e, type: 2}
-  FireWorks: {fileID: 0}
-  LaunchPad: {fileID: 0}
+  Spacium: {fileID: 1812402686052758, guid: 6cc1dc669286dfc429a469ed5abc517d, type: 2}
   Cube: {fileID: 719518876}
 --- !u!4 &1935534572
 Transform:

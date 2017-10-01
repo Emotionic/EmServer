@@ -9,6 +9,7 @@ using System.Linq;
 class Calibration : MonoBehaviour
 {
     public static Vector3 CameraPosition;
+    public static Size RectSize;
 
     public GameObject ColorManager;
     
@@ -91,11 +92,11 @@ class Calibration : MonoBehaviour
             return;
         
         var largestBlob = cc.GetLargestBlob();
-
+        
         // シーン遷移
         if (count < 0)
         {
-            SceneManager.LoadScene("WaitPerformer");
+            SceneManager.LoadScene("MainScene");
         }
         
         // カメラの座標を合わせてキャリブレーション
@@ -107,8 +108,9 @@ class Calibration : MonoBehaviour
             Screen.height / 2 - (float)pos.Y,
             -X);
 
+        RectSize = new Size(largestBlob.Width, largestBlob.Height);
         CameraPosition /= 100f;
-        
+
         count--;
     }
 

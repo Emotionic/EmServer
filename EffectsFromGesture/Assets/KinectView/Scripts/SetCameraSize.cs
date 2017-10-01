@@ -8,10 +8,6 @@ public class SetCameraSize : MonoBehaviour
     // Update is called once per frame
     void Update ()
     {
-        float frustumHeight = Screen.width / 100f / ((float)Screen.width / Screen.height);
-        
-        float distance = frustumHeight * 0.5f;
-
-        _MainCamera.orthographicSize = distance;
+        _MainCamera.orthographicSize = (Calibration.RectSize.Height / 2f) / 100f;
 	}
 }

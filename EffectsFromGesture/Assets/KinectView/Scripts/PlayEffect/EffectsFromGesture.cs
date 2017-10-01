@@ -22,10 +22,8 @@ namespace Assets.KinectView.Scripts
 
         public GameObject Trail;
 
-        public GameObject FireWorks;
-
-        public GameObject LaunchPad;
-
+        public GameObject Spacium;
+        
         public GameObject Cube;
 
         private WSServer _WSServer;
@@ -157,11 +155,7 @@ namespace Assets.KinectView.Scripts
 
             // 残像切り替え
             Cube.SetActive(_Customize.IsZNZOVisibled);
-
-            if(Input.GetKey(KeyCode.F))
-            {
-                Instantiate(FireWorks, LaunchPad.transform);
-            }
+            
         }
 
         private void _GestureManager_GestureDetected(KeyValuePair<Gesture, DiscreteGestureResult> result, ulong id)
@@ -212,6 +206,7 @@ namespace Assets.KinectView.Scripts
                 if(!joints[i].transform.Find(Trail.name))
                 {
                     Instantiate(Trail, joints[i].transform).name = "Trail";
+                    Instantiate(Spacium, joints[i].transform).name = "Spacium";
                 }
 
                 trail = joints[i].transform.Find(Trail.name);
