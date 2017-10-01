@@ -6,6 +6,7 @@ using Windows.Kinect;
 using Microsoft.Kinect.VisualGestureBuilder;
 using Effekseer;
 using Kinect = Windows.Kinect;
+using System;
 
 namespace Assets.KinectView.Scripts
 {
@@ -28,6 +29,9 @@ namespace Assets.KinectView.Scripts
 
         public GameObject Cube;
 
+        public delegate void EffectCreateHandler(EffectData data);
+        public event EffectCreateHandler EffectCreated;
+
         private WSServer _WSServer;
 
         private Camera _MainCamera;
@@ -38,7 +42,20 @@ namespace Assets.KinectView.Scripts
         /// エフェクト名
         /// </summary>
         private readonly string[] _EffectNames = { "StairBroken", "punch", "linetrail_ver2" };
-        
+
+        private readonly Dictionary<string, Emotionic.Gesture> _GestureRelation = new Dictionary<string, Emotionic.Gesture>()
+        {
+            { "Jump02", Emotionic.Gesture.Punch },
+            { "Punch_Left", Emotionic.Gesture.Punch },
+            { "Punch_Right", Emotionic.Gesture.Punch}
+        };
+
+        private readonly Dictionary<Emotionic.Effect, string> _EffectRelation = new Dictionary<Emotionic.Effect, string>()
+        {
+            { Emotionic.Effect.Impact, "StairBroken" },
+            { Emotionic.Effect.Punch, "punch" }
+        };
+
         private GestureManager _GestureManager;
 
         private bool _IsRegMethod = false;
@@ -58,6 +75,8 @@ namespace Assets.KinectView.Scripts
 
         private float _StartedTime;
 
+        private List<float> _timeLeft = new List<float>();
+
         // Use this for initialization
         void Start()
         {
@@ -72,8 +91,9 @@ namespace Assets.KinectView.Scripts
                 _WSServer = GameObject.Find("WSServer").GetComponent<WSServer>();
 
                 _WSServer.Like += _WSServer_Like;
-
                 _WSServer.Customize += _WSServer_Customize;
+
+                _WSServer.OnMainSceneLoaded();
             }
 
             _GestureManager = GestureManager.GetComponent<GestureManager>();
@@ -90,6 +110,9 @@ namespace Assets.KinectView.Scripts
 
             // 開始時間の記録
             _StartedTime = Time.realtimeSinceStartup;
+
+            for (var i = 0; i < 4; i++)
+                _timeLeft.Add(0);
 
         }
 
@@ -162,6 +185,10 @@ namespace Assets.KinectView.Scripts
             {
                 Instantiate(FireWorks, LaunchPad.transform);
             }
+
+            for (var i = 0; i < 4; i++)
+                _timeLeft[i] -= Time.deltaTime;
+
         }
 
         private void _GestureManager_GestureDetected(KeyValuePair<Gesture, DiscreteGestureResult> result, ulong id)
@@ -175,10 +202,43 @@ namespace Assets.KinectView.Scripts
 
             Debug.Log(result.Key.Name + "Confidence : " + result.Value.Confidence);
 
-            Vector3 pos =
-                        _Joints[id][ea.AttachPosition].transform.position;
+            if (IsConnected)
+            {
+                var gesture = _GestureRelation[result.Key.Name];
+                if (_Customize.EffectsCustomize[gesture].Count == 0)
+                {
+                    return;
+                }
 
-            EffekseerSystem.PlayEffect(ea.EffectName, pos);
+                Vector3 pos;
+                string effectName;
+
+                foreach (var eOption in _Customize.EffectsCustomize[gesture])
+                {
+                    effectName = _EffectRelation[eOption.Key];
+                    foreach (var parts in eOption.Value.AttachedParts)
+                    {
+                        pos = _Joints[id][(JointType)Enum.Parse(typeof(JointType), parts)].transform.position;
+                        var h = EffekseerSystem.PlayEffect(effectName, pos);
+                        h.SetScale(GetScaleVec(eOption.Value.Scale));
+                        SendEffect(
+                            effectName,
+                            pos,
+                            FloatListToColor(eOption.Value.Color),
+                            eOption.Value.IsRainbow,
+                            GetScaleVec(eOption.Value.Scale),
+                            Quaternion.identity
+                        );
+
+                    }
+                }
+            }
+            else
+            {
+                var pos = _Joints[id][ea.AttachPosition].transform.position;
+                EffekseerSystem.PlayEffect(ea.EffectName, pos);
+            }
+
         }
 
         /// <summary>
@@ -197,16 +257,28 @@ namespace Assets.KinectView.Scripts
             
             for (int i = 0; i < joints.Length; i++)
             {
-                //if (_WSServer != null && _WSServer.IsConnected && !_EffectsCustomize.ContainsKey("Joint_" + joints[i].name))
-                //{
-                //    if (joints[i].transform.Find(Trail.name) != null)
-                //    {
-                //        Destroy(joints[i].transform.Find(Trail.name));
-                //    }
-                //    continue;
-                //}
-                
-                // EffectOption eOption = (_WSServer != null && _WSServer.IsConnected) ? _EffectsCustomize["Joint_" + joints[i].name] : new EffectOption("LINE", Color.black, true);
+                EffectOption eOption;
+                if (IsConnected)
+                {
+                    if (!_Customize.EffectsCustomize[Emotionic.Gesture.Always].ContainsKey(Emotionic.Effect.Line)
+                        || !_Customize.EffectsCustomize[Emotionic.Gesture.Always][Emotionic.Effect.Line].AttachedParts.Contains(joints[i].name))
+                    {
+                        if (joints[i].transform.Find(Trail.name) != null)
+                        {
+                            Destroy(joints[i].transform.Find(Trail.name));
+                        }
+                        continue;
+                    }
+
+                    eOption = _Customize.EffectsCustomize[Emotionic.Gesture.Always][Emotionic.Effect.Line];
+
+                }
+                else
+                {
+                    // 切断時は全てON
+                    eOption = new EffectOption();
+                    eOption.IsRainbow = true;
+                }
 
                 Transform trail;
                 if(!joints[i].transform.Find(Trail.name))
@@ -215,6 +287,8 @@ namespace Assets.KinectView.Scripts
                 }
 
                 trail = joints[i].transform.Find(Trail.name);
+                trail.localScale = GetScaleVec(eOption.Scale);
+
                 TrailRenderer tr = trail.GetComponent<TrailRenderer>();
                 ParticleSystem[] pss =
                     {
@@ -222,40 +296,41 @@ namespace Assets.KinectView.Scripts
                     trail.Find("NG Hand Particle").GetComponent<ParticleSystem>()
                     };
 
-                tr.startColor = _RbColor.Rainbow;
-                foreach (ParticleSystem ps in pss)
+                if (eOption.IsRainbow)
                 {
-                    ps.startColor = _RbColor.Rainbow;
+                    tr.startColor = _RbColor.Rainbow;
+                    foreach (ParticleSystem ps in pss)
+                    {
+                        ps.startColor = _RbColor.Rainbow;
+                    }
+                }
+                else
+                {
+                    tr.startColor = FloatListToColor(eOption.Color);
+                    foreach (ParticleSystem ps in pss)
+                    {
+                        ps.startColor = FloatListToColor(eOption.Color);
+                    }
                 }
 
-                //if (eOption.isRainbow)
-                //{
-                //    tr.startColor = _RbColor.Rainbow;
-                //    foreach(ParticleSystem ps in pss)
-                //    {
-                //        ps.startColor = _RbColor.Rainbow;
-                //    }
-                //}
-                //else
-                //{
-                //    tr.startColor = eOption.Color;
-                //    foreach(ParticleSystem ps in pss)
-                //    {
-                //        ps.startColor = eOption.Color;
-                //    }
-                //}
+                // データをEmClientに送信
+                // だいたい5fpsくらいにする
+                if (_timeLeft[i] <= 0)
+                {
+                    _timeLeft[i] = (1.0f / 5);
+
+                    SendEffect(
+                        "LINE_" + joints[i].name,
+                        joints[i].transform.position,
+                        FloatListToColor(eOption.Color),
+                        eOption.IsRainbow,
+                        GetScaleVec(eOption.Scale),
+                        Quaternion.identity
+                    );
+
+                }
 
             }
-
-            // trail prefab instantiate
-            /*
-            if(!handTipLeft.transform.Find(Trail.name))
-            {
-                handTipLeft.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-                var obj = Instantiate(Trail, handTipLeft.transform);
-                obj.name = "Trail";
-            }
-            */
 
         }
 
@@ -267,6 +342,32 @@ namespace Assets.KinectView.Scripts
             col.b = _list[2];
             col.a = _list[3];
             return col;
+        }
+
+        private void SendEffect(string name, Vector3 pos, Color color, bool isRainbow, Vector3 scale, Quaternion rotation, bool doLoop = false)
+        {
+            if (!IsConnected) return;
+
+            var data = new EffectData();
+            data.Name = name;
+            data.Position = Camera.main.WorldToViewportPoint(pos);
+            data.Color = color;
+            data.IsRainbow = isRainbow;
+            data.Scale = scale;
+            data.Rotation = rotation;
+            data.DoLoop = doLoop;
+
+            EffectCreated(data);
+        }
+
+        private Vector3 GetScaleVec(float scale)
+        {
+            return new Vector3(scale, scale, scale);
+        }
+
+        private bool IsConnected
+        {
+            get { return _WSServer != null && _WSServer.IsConnected; }
         }
         
     }
