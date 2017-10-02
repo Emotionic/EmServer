@@ -105,20 +105,23 @@ namespace Assets.KinectView.Scripts
         {
             GameObject fw;
             ParticleSystem ps;
+            FireWorksManager fwm;
             switch(data.name)
             {
                 case "heart":
                     fw = Instantiate(FireWorks, LaunchPad.transform);
                     ps = fw.GetComponent<ParticleSystem>();
+                    fwm = fw.GetComponent<FireWorksManager>();
                     ps.startLifetime = Calibration.RectSize.Height / 5f / 100f;
-                    ps.startColor = data.color;
+                    fwm.StartColor = data.color;
                     Destroy(fw.gameObject, 7);
                     break;
                 case "star":
                     fw = Instantiate(FireWorks, LaunchPad.transform);
                     ps = fw.GetComponent<ParticleSystem>();
+                    fwm = fw.GetComponent<FireWorksManager>();
                     ps.startLifetime = Calibration.RectSize.Height / 5f / 100f;
-                    ps.startColor = data.color;
+                    fwm.StartColor = data.color;
                     Destroy(fw.gameObject, 7);
                     break;
             }
