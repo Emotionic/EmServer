@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using WebSocketSharp;
 using Newtonsoft.Json;
 using UnityEngine.SceneManagement;
+using Assets.KinectView.Scripts;
 
 public class WSServer : MonoBehaviour
 {
@@ -33,6 +34,14 @@ public class WSServer : MonoBehaviour
     private CustomData customData;
 
     private Canvas _Canvas;
+
+    private const string EnabledJoinTyoe = "001";
+
+    public void OnMainSceneLoaded()
+    {
+        GameObject.Find("EffectEmitter").GetComponent<EffectsFromGesture>().EffectCreated += WSServer_EffectCreated;
+        Customize(customData);
+    }
 
     public void Connect()
     {
@@ -114,11 +123,6 @@ public class WSServer : MonoBehaviour
             }
         }
 
-        if ((Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftShift) && Input.GetKey(KeyCode.C)) && (Application.isEditor || Debug.isDebugBuild))
-        {
-            SceneManager.LoadScene("MainScene");
-        }
-
         if (!IsConnected)
             return;
 
@@ -144,6 +148,7 @@ public class WSServer : MonoBehaviour
                             // キャリブレーションの開始
                             snd = "PERFORMER\n";
                             snd += "CALIB_OK\n";
+                            snd += EnabledJoinTyoe;
                             ws.Send(snd);
 
                             break;
@@ -194,14 +199,22 @@ public class WSServer : MonoBehaviour
 
     }
 
+    private void WSServer_EffectCreated(EffectData data)
+    {
+        var snd = "CLIENT\n";
+        snd += "GENEFF\n";
+        snd += JsonUtility.ToJson(data) + "\n";
+
+        ws.Send(snd);
+    }
+
     private void ReplyAR()
     {
-        var snd = "";
         var ardata = new ARData();
         ardata.EnabledEffects = customData.EnabledLikes;
         ardata.isLikeEnabled = customData.JoinType % 10 == 1;
 
-        snd = "CLIENT\n";
+        var snd = "CLIENT\n";
         snd += "AR_OK\n";
         snd += JsonUtility.ToJson(ardata) + "\n";
 
