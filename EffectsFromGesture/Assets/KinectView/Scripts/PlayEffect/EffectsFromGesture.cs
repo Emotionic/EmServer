@@ -32,6 +32,12 @@ namespace Assets.KinectView.Scripts
         public delegate void EffectCreateHandler(EffectData data);
         public event EffectCreateHandler EffectCreated;
 
+        public UnityEngine.AudioSource Audio;
+
+        public AudioClip Clip;
+
+        public bool PlayNewBodySound;
+
         private WSServer _WSServer;
 
         private Camera _MainCamera;
@@ -77,6 +83,8 @@ namespace Assets.KinectView.Scripts
 
         private List<float> _timeLeft = new List<float>();
 
+        private int _bodyCount = 0;
+
         // Use this for initialization
         void Start()
         {
@@ -111,7 +119,7 @@ namespace Assets.KinectView.Scripts
             // 開始時間の記録
             _StartedTime = Time.realtimeSinceStartup;
 
-            for (var i = 0; i < 4; i++)
+            for (var i = 0; i < 6; i++)
                 _timeLeft.Add(0);
 
         }
@@ -160,6 +168,10 @@ namespace Assets.KinectView.Scripts
 
             _Joints = _ColorBodyView.JointsFromBodies;
             
+            if (PlayNewBodySound && _Joints.Count > _bodyCount)
+                Audio.PlayOneShot(Clip);
+            _bodyCount = _Joints.Count;
+
             foreach (GameObject body in _ColorBodyView.GetBodies())
             {
                 AddingTrailRendererToBody(body);
@@ -186,7 +198,7 @@ namespace Assets.KinectView.Scripts
                 Instantiate(FireWorks, LaunchPad.transform);
             }
 
-            for (var i = 0; i < 4; i++)
+            for (var i = 0; i < 6; i++)
                 _timeLeft[i] -= Time.deltaTime;
 
         }
@@ -252,7 +264,9 @@ namespace Assets.KinectView.Scripts
                 _Joints[ulong.Parse(body.name)][JointType.HandTipRight],
                 _Joints[ulong.Parse(body.name)][JointType.HandTipLeft],
                 _Joints[ulong.Parse(body.name)][JointType.FootRight],
-                _Joints[ulong.Parse(body.name)][JointType.FootLeft]
+                _Joints[ulong.Parse(body.name)][JointType.FootLeft],
+                _Joints[ulong.Parse(body.name)][JointType.Head],
+                _Joints[ulong.Parse(body.name)][JointType.SpineBase]
             };
             
             for (int i = 0; i < joints.Length; i++)
@@ -265,7 +279,7 @@ namespace Assets.KinectView.Scripts
                     {
                         if (joints[i].transform.Find(Trail.name) != null)
                         {
-                            Destroy(joints[i].transform.Find(Trail.name));
+                            Destroy(joints[i].transform.Find(Trail.name).gameObject);
                         }
                         continue;
                     }
@@ -278,6 +292,7 @@ namespace Assets.KinectView.Scripts
                     // 切断時は全てON
                     eOption = new EffectOption();
                     eOption.IsRainbow = true;
+                    eOption.Scale = 1.0f;
                 }
 
                 Transform trail;
@@ -287,9 +302,10 @@ namespace Assets.KinectView.Scripts
                 }
 
                 trail = joints[i].transform.Find(Trail.name);
-                trail.localScale = GetScaleVec(eOption.Scale);
 
                 TrailRenderer tr = trail.GetComponent<TrailRenderer>();
+                tr.widthMultiplier = 0.21f * eOption.Scale;
+
                 ParticleSystem[] pss =
                     {
                     trail.Find("Hand Particle").GetComponent<ParticleSystem>(),
@@ -336,6 +352,9 @@ namespace Assets.KinectView.Scripts
 
         private Color FloatListToColor(List<float> _list)
         {
+            if (_list == null)
+                return Color.black;
+
             var col = new Color();
             col.r = _list[0];
             col.g = _list[1];

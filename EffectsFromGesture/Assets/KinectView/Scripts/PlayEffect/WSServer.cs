@@ -35,6 +35,8 @@ public class WSServer : MonoBehaviour
 
     private Canvas _Canvas;
 
+    private const string EnabledJoinTyoe = "001";
+
     public void OnMainSceneLoaded()
     {
         GameObject.Find("EffectEmitter").GetComponent<EffectsFromGesture>().EffectCreated += WSServer_EffectCreated;
@@ -146,6 +148,7 @@ public class WSServer : MonoBehaviour
                             // キャリブレーションの開始
                             snd = "PERFORMER\n";
                             snd += "CALIB_OK\n";
+                            snd += EnabledJoinTyoe;
                             ws.Send(snd);
 
                             break;
