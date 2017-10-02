@@ -25,8 +25,12 @@ namespace Assets.KinectView.Scripts
 
         public GameObject Spacium;
 
-        public GameObject FireWorks;
-        
+        public GameObject FireWorks_Botan;
+
+        public GameObject FireWorks_Senrin;
+
+        public GameObject LaunchPad;
+
         public GameObject Cube;
 
         public delegate void EffectCreateHandler(EffectData data);
@@ -37,8 +41,6 @@ namespace Assets.KinectView.Scripts
         public AudioClip Clip;
 
         public bool PlayNewBodySound;
-
-        public GameObject LaunchPad;
 
         private WSServer _WSServer;
 
@@ -124,6 +126,22 @@ namespace Assets.KinectView.Scripts
             for (var i = 0; i < 6; i++)
                 _timeLeft.Add(0);
 
+            // 音声認識イベントの登録
+            GameObject.Find("VoiceManager").GetComponent<VoiceManager>().Recognized += EffectsFromGesture_Recognized;
+
+        }
+
+        private void EffectsFromGesture_Recognized(string keyword)
+        {
+            switch (keyword)
+            {
+                case "プロコン":
+                    Audio.pitch = 0.7f;
+                    Audio.PlayOneShot(Clip);
+                    break;
+
+            }
+
         }
 
         private void _WSServer_Customize(CustomData data)
@@ -140,7 +158,7 @@ namespace Assets.KinectView.Scripts
             switch(data.name)
             {
                 case "heart":
-                    fw = Instantiate(FireWorks, LaunchPad.transform);
+                    fw = Instantiate(FireWorks_Botan, LaunchPad.transform);
                     ps = fw.GetComponent<ParticleSystem>();
                     fwm = fw.GetComponent<FireWorksManager>();
                     ps.startLifetime = Calibration.RectSize.Height / 5f / 100f;
@@ -148,7 +166,7 @@ namespace Assets.KinectView.Scripts
                     Destroy(fw.gameObject, 7);
                     break;
                 case "star":
-                    fw = Instantiate(FireWorks, LaunchPad.transform);
+                    fw = Instantiate(FireWorks_Senrin, LaunchPad.transform);
                     ps = fw.GetComponent<ParticleSystem>();
                     fwm = fw.GetComponent<FireWorksManager>();
                     ps.startLifetime = Calibration.RectSize.Height / 5f / 100f;
@@ -181,7 +199,10 @@ namespace Assets.KinectView.Scripts
             _Joints = _ColorBodyView.JointsFromBodies;
             
             if (PlayNewBodySound && _Joints.Count > _bodyCount)
+            {
+                Audio.pitch = 1.0f;
                 Audio.PlayOneShot(Clip);
+            }
             _bodyCount = _Joints.Count;
 
             foreach (GameObject body in _ColorBodyView.GetBodies())
@@ -203,11 +224,6 @@ namespace Assets.KinectView.Scripts
 
             // 残像切り替え
             Cube.SetActive(_Customize.IsZNZOVisibled);
-
-            if(Input.GetKey(KeyCode.F))
-            {
-                Instantiate(FireWorks, LaunchPad.transform);
-            }
 
             for (var i = 0; i < 6; i++)
                 _timeLeft[i] -= Time.deltaTime;

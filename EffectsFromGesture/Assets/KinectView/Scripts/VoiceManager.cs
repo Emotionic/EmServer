@@ -4,11 +4,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Windows.Speech;
-using Windows.Kinect;
-
 
 public class VoiceManager : MonoBehaviour
 {
+    public delegate void VoiceRecogHandler(string keyword);
+    public event VoiceRecogHandler Recognized;
+
     private string[] m_Keywords = { "たまや" ,"焼肉定食", "ラーメン", "仙台高専", "プロコン", "山口", "与謝野晶子", "DDR", "サウンドボルテックス","野獣先輩", "810", "1 1 4 5 1 4"};
     private KeywordRecognizer m_Recognizer;
 
@@ -28,18 +29,8 @@ public class VoiceManager : MonoBehaviour
         builder.AppendFormat("\tDuration: {0} seconds{1}", args.phraseDuration.TotalSeconds, Environment.NewLine);
         Debug.Log(builder.ToString());
 
-        switch(args.text)
-        {
-            case "たまや":
-                Debug.Log("やったぜ");
-                break;
-        }
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
+        if (args.confidence == ConfidenceLevel.High || args.confidence == ConfidenceLevel.Medium)
+            Recognized(args.text);
     }
 
 }
