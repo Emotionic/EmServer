@@ -23,8 +23,12 @@ namespace Assets.KinectView.Scripts
         public GameObject Trail;
 
         public GameObject Spacium;
+
+        public GameObject FireWorks;
         
         public GameObject Cube;
+
+        public GameObject LaunchPad;
 
         private WSServer _WSServer;
 
@@ -99,16 +103,23 @@ namespace Assets.KinectView.Scripts
 
         private void _WSServer_Like(LikeData data)
         {
+            GameObject fw;
+            ParticleSystem ps;
             switch(data.name)
             {
                 case "heart":
-                    Debug.Log("HEART");
-                    _MainCamera.backgroundColor = data.color;
+                    fw = Instantiate(FireWorks, LaunchPad.transform);
+                    ps = fw.GetComponent<ParticleSystem>();
+                    ps.startLifetime = Calibration.RectSize.Height / 5f / 100f;
+                    ps.startColor = data.color;
+                    Destroy(fw.gameObject, 7);
                     break;
                 case "star":
-                    Debug.Log("STAR");
-                    _MainCamera.backgroundColor = data.color;
-
+                    fw = Instantiate(FireWorks, LaunchPad.transform);
+                    ps = fw.GetComponent<ParticleSystem>();
+                    ps.startLifetime = Calibration.RectSize.Height / 5f / 100f;
+                    ps.startColor = data.color;
+                    Destroy(fw.gameObject, 7);
                     break;
             }
         }
@@ -141,7 +152,6 @@ namespace Assets.KinectView.Scripts
             }
 
             _RbColor.Update();
-            
 
             // 時間制限
             if (_Customize.TimeLimit != 0)

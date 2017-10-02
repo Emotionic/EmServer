@@ -8,6 +8,6 @@ public class SetCameraSize : MonoBehaviour
     // Update is called once per frame
     void Update ()
     {
-        _MainCamera.orthographicSize = (Calibration.RectSize.Height / 2f) / 100f;
+        // _MainCamera.orthographicSize = (Calibration.RectSize.Height / 2f) / 100f;
 	}
 }
