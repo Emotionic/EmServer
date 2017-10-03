@@ -322,7 +322,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58efaa5188f353d4192bed7a8deb8386, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  IsBodyView: 1
+  IsBodyView: 0
   BoneMaterial: {fileID: 2100000, guid: f2ea145c63353784985576f08398a815, type: 2}
   BodySourceManager: {fileID: 689630467}
   ConvertCamera: {fileID: 814211668}
@@ -905,18 +905,86 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a94bf11980317ea43946df15ddb8cddf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &1747301867
-MonoBehaviour:
+--- !u!82 &1747301867
+AudioSource:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1747301860}
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5f25504797b8f3b4884a758bfb78602f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _MainCamera: {fileID: 1747301864}
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 2
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 2
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 2
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 2
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
 --- !u!1 &1935534570
 GameObject:
   m_ObjectHideFlags: 0
@@ -949,9 +1017,15 @@ MonoBehaviour:
   BodySourceManager: {fileID: 689630467}
   Trail: {fileID: 1059535331452628, guid: e9f24956af1d56e4ca1ab1e343118b8e, type: 2}
   Spacium: {fileID: 1723023859568538, guid: df9aaccaed74e4a41966a8657b9a8d18, type: 2}
-  FireWorks: {fileID: 1968892175685888, guid: 31b9a7ca401187e499ade0705075d905, type: 2}
-  Cube: {fileID: 719518876}
+  FireWorks_Botan: {fileID: 1680507276254458, guid: ee57b4dd335b39a469608c1622c88be0,
+    type: 2}
+  FireWorks_Senrin: {fileID: 1248671262160786, guid: 26f12985442256c43805817b939dfc75,
+    type: 2}
   LaunchPad: {fileID: 1478798665}
+  Cube: {fileID: 719518876}
+  Audio: {fileID: 1747301867}
+  Clip: {fileID: 8300000, guid: e333e24cdfe31564ea03698474fd7528, type: 3}
+  PlayNewBodySound: 1
 --- !u!4 &1935534572
 Transform:
   m_ObjectHideFlags: 0
