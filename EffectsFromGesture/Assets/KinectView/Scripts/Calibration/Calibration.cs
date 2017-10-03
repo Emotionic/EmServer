@@ -84,8 +84,8 @@ class Calibration : MonoBehaviour
             return;
 
         // 青色を検出
-        // var skinMat = ColorExtraction(image, ColorConversionCodes.BGR2HSV, 90, 120, 0, 255, 200, 255);
-         var skinMat = ColorExtraction(image, ColorConversionCodes.BGR2HSV, 90, 120, 0, 255, 220, 255);
+        var skinMat = ColorExtraction(image, ColorConversionCodes.BGR2HSV, 90, 120, 0, 255, 200, 255);
+        // var skinMat = ColorExtraction(image, ColorConversionCodes.BGR2HSV, 90, 120, 0, 255, 220, 255);
 
         ConnectedComponents cc = Cv2.ConnectedComponentsEx(skinMat);
 
@@ -97,7 +97,7 @@ class Calibration : MonoBehaviour
         // シーン遷移
         if (count < 0)
         {
-            SceneManager.LoadScene("MainScene");
+            SceneManager.LoadScene("WaitPerformer");
         }
         
         // カメラの座標を合わせてキャリブレーション
