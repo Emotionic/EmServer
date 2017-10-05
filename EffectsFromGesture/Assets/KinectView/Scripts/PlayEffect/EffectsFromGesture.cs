@@ -59,13 +59,16 @@ namespace Assets.KinectView.Scripts
         /// <summary>
         /// エフェクト名
         /// </summary>
-        private readonly string[] _EffectNames = { "StairBroken", "punch", "linetrail_ver2" };
+        private readonly string[] _EffectNames = { "StairBroken", "punch", "laser" };
 
         private readonly Dictionary<string, Emotionic.Gesture> _GestureRelation = new Dictionary<string, Emotionic.Gesture>()
         {
-            { "Jump02", Emotionic.Gesture.Punch },
-            { "Punch_Left", Emotionic.Gesture.Punch },
-            { "Punch_Right", Emotionic.Gesture.Punch}
+            { "Jump", Emotionic.Gesture.Jump },
+            { "Punch", Emotionic.Gesture.Punch },
+            {"ChimpanzeeClap_Left", Emotionic.Gesture.ChimpanzeeClap_Left  },
+            {"ChimpanzeeClap_Right", Emotionic.Gesture.ChimpanzeeClap_Right },
+            {"Daisuke", Emotionic.Gesture.Daisuke },
+            {"Kamehameha", Emotionic.Gesture.Kamehameha },
         };
 
         private readonly Dictionary<Emotionic.Effect, string> _EffectRelation = new Dictionary<Emotionic.Effect, string>()
@@ -125,9 +128,12 @@ namespace Assets.KinectView.Scripts
 
             // Add effect attributes
             _GestureFromEffectAttributes = new Dictionary<string, EffectAttributes>();
-            _GestureFromEffectAttributes["Jump02"] = new EffectAttributes(0.6, JointType.SpineMid, _EffectNames[0]);
-            _GestureFromEffectAttributes["Punch_Left"] = new EffectAttributes(0.2, JointType.HandRight, _EffectNames[1]);
-            _GestureFromEffectAttributes["Punch_Right"] = new EffectAttributes(0.2, JointType.HandLeft, _EffectNames[1]);
+            _GestureFromEffectAttributes["Jump"] = new EffectAttributes(0.4, JointType.SpineMid, _EffectNames[0]);
+            _GestureFromEffectAttributes["Punch"] = new EffectAttributes(0.4, JointType.HandRight, _EffectNames[1]);
+            _GestureFromEffectAttributes["ChimpanzeeClap_Left"] = new EffectAttributes(0.4, JointType.HandTipLeft, Resources.Load("Prefabs/clap_effe") as GameObject);
+            _GestureFromEffectAttributes["ChimpanzeeClap_Right"] = new EffectAttributes(0.4, JointType.HandTipRight, Resources.Load("Prefabs/clap_effe") as GameObject);
+            _GestureFromEffectAttributes["Daisuke"] = new EffectAttributes(0.4, JointType.Head, _EffectNames[0]);
+            _GestureFromEffectAttributes["Kamehameha"] = new EffectAttributes(0.4, JointType.HandLeft, _EffectNames[2]);
 
             _RbColor = new RainbowColor(0, 0.001f);
 
@@ -309,7 +315,7 @@ namespace Assets.KinectView.Scripts
                     return;
                 }
 
-                Vector3 pos;
+                Transform transform;
                 string effectName;
 
                 foreach (var eOption in _Customize.EffectsCustomize[gesture])
@@ -317,9 +323,21 @@ namespace Assets.KinectView.Scripts
                     effectName = _EffectRelation[eOption.Key];
                     foreach (var parts in eOption.Value.AttachedParts)
                     {
-                        pos = _Joints[id][(JointType)Enum.Parse(typeof(JointType), parts)].transform.position;
-                        var h = EffekseerSystem.PlayEffect(effectName, pos);
-                        h.SetScale(GetScaleVec(eOption.Value.Scale));
+                        transform = _Joints[id][(JointType)Enum.Parse(typeof(JointType), parts)].transform;
+
+                        switch (ea.Type)
+                        {
+                            case EffectAttributes.EffectType.Effekseer:
+                                var h = EffekseerSystem.PlayEffect(effectName, transform.position);
+                                h.SetScale(GetScaleVec(eOption.Value.Scale));
+                                break;
+
+                            case EffectAttributes.EffectType.ParticleSystem:
+                                var effe = Instantiate(ea.Effect, transform);
+                                effe.GetComponent<ParticleSystem>().Play(true);
+                                Destroy(effe.gameObject, 10);
+                                break;
+                        }
                         //SendEffect(
                         //    effectName,
                         //    pos,
