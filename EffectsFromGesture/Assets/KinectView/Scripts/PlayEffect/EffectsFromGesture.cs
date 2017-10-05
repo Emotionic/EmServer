@@ -7,6 +7,8 @@ using Microsoft.Kinect.VisualGestureBuilder;
 using Effekseer;
 using Kinect = Windows.Kinect;
 using System;
+using UTJ.FrameCapturer;
+using System.IO;
 
 namespace Assets.KinectView.Scripts
 {
@@ -40,6 +42,10 @@ namespace Assets.KinectView.Scripts
 
         public AudioClip Clip;
 
+        public RecorderBase Recoder;
+
+        public RenderTexture cap;
+
         public bool PlayNewBodySound;
 
         private WSServer _WSServer;
@@ -48,6 +54,8 @@ namespace Assets.KinectView.Scripts
 
         private CustomData _Customize;
 
+        private bool initCustomized = false;
+        
         /// <summary>
         /// エフェクト名
         /// </summary>
@@ -104,6 +112,7 @@ namespace Assets.KinectView.Scripts
 
                 _WSServer.Like += _WSServer_Like;
                 _WSServer.Customize += _WSServer_Customize;
+                _WSServer.EndPerform += _WSServer_EndPerform;
 
                 _WSServer.OnMainSceneLoaded();
             }
@@ -131,6 +140,15 @@ namespace Assets.KinectView.Scripts
 
         }
 
+        private void _WSServer_EndPerform()
+        {
+            // 演技の終了時
+            if (Recoder.isRecording)
+                Recoder.EndRecording();
+            SceneManager.LoadScene("FinishScene");
+
+        }
+
         private void EffectsFromGesture_Recognized(string keyword)
         {
             switch (keyword)
@@ -138,6 +156,22 @@ namespace Assets.KinectView.Scripts
                 case "プロコン":
                     Audio.pitch = 0.7f;
                     Audio.PlayOneShot(Clip);
+
+                    var path = Environment.CurrentDirectory + "/Capture/" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".png";
+                    Debug.Log("[DEBUG!] " + path);
+
+                    Texture2D tex = new Texture2D(cap.width, cap.height, TextureFormat.RGB24, false);
+                    RenderTexture.active = cap;
+                    tex.ReadPixels(new Rect(0, 0, cap.width, cap.height), 0, 0);
+                    tex.Apply();
+
+                    // Encode texture into PNG
+                    byte[] bytes = tex.EncodeToPNG();
+                    Destroy(tex);
+
+                    //Write to a file in the project folder
+                    File.WriteAllBytes(path, bytes);
+                    
                     break;
 
             }
@@ -148,6 +182,17 @@ namespace Assets.KinectView.Scripts
         {
             Debug.Log("CUSTOMIZED");
             _Customize = data;
+
+            if (!initCustomized)
+            {
+                if (_Customize.DoShare)
+                {
+                    Recoder.BeginRecording();
+                }
+
+                initCustomized = true;
+            }
+
         }
 
         private void _WSServer_Like(LikeData data)
@@ -212,12 +257,20 @@ namespace Assets.KinectView.Scripts
 
             _RbColor.Update();
 
+            if (Input.GetKeyDown(KeyCode.S))
+            {
+                Recoder.EndRecording();
+            }
+
             // 時間制限
             if (_Customize.TimeLimit != 0)
             {
                 if ((_Customize.TimeLimit * 60) - (Time.realtimeSinceStartup - _StartedTime) <= 0)
                 {
                     // 時間経過 -> シーン遷移
+                    _WSServer.OnPerformEndedAuto();
+                    if (Recoder.isRecording)
+                        Recoder.EndRecording();
                     SceneManager.LoadScene("FinishScene");
                 }
             }
@@ -260,14 +313,14 @@ namespace Assets.KinectView.Scripts
                         pos = _Joints[id][(JointType)Enum.Parse(typeof(JointType), parts)].transform.position;
                         var h = EffekseerSystem.PlayEffect(effectName, pos);
                         h.SetScale(GetScaleVec(eOption.Value.Scale));
-                        //SendEffect(
-                        //    effectName,
-                        //    pos,
-                        //    FloatListToColor(eOption.Value.Color),
-                        //    eOption.Value.IsRainbow,
-                        //    GetScaleVec(eOption.Value.Scale),
-                        //    Quaternion.identity
-                        //);
+                        SendEffect(
+                            effectName,
+                            pos,
+                            FloatListToColor(eOption.Value.Color),
+                            eOption.Value.IsRainbow,
+                            GetScaleVec(eOption.Value.Scale),
+                            Quaternion.identity
+                        );
 
                     }
                 }
@@ -358,21 +411,20 @@ namespace Assets.KinectView.Scripts
                 }
 
                 // データをEmClientに送信
-                // だいたい5fpsくらいにする
-                //if (_timeLeft[i] <= 0)
-                //{
-                //    _timeLeft[i] = (1.0f / 5);
+                if (_timeLeft[i] <= 0)
+                {
+                    _timeLeft[i] = (1.0f / 2);
 
-                //    SendEffect(
-                //        "LINE_" + joints[i].name,
-                //        joints[i].transform.position,
-                //        FloatListToColor(eOption.Color),
-                //        eOption.IsRainbow,
-                //        GetScaleVec(eOption.Scale),
-                //        Quaternion.identity
-                //    );
+                    SendEffect(
+                        "LINE_" + joints[i].name,
+                        joints[i].transform.position,
+                        FloatListToColor(eOption.Color),
+                        eOption.IsRainbow,
+                        GetScaleVec(eOption.Scale),
+                        Quaternion.identity
+                    );
 
-                //}
+                }
 
             }
 

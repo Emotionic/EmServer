@@ -16,6 +16,9 @@ public class WSServer : MonoBehaviour
     public delegate void LikeHandler(LikeData data);
     public event LikeHandler Like;
 
+    public delegate void EndPerformHandler();
+    public event EndPerformHandler EndPerform;
+
     public bool IsConnected
     {
         get
@@ -185,6 +188,11 @@ public class WSServer : MonoBehaviour
 
                             break;
 
+                        /* 演技の終了 */
+                        case "ENDPERFORM":
+                            EndPerform();
+                            break;
+
                         default:
                             break;
                     }
@@ -197,6 +205,15 @@ public class WSServer : MonoBehaviour
             }
         }
 
+    }
+
+    public void OnPerformEndedAuto()
+    {
+        var snd = "SERV\n";
+        snd += "ENDPERFORM\n";
+        snd += (customData.DoShare ? "DOSHARE" : "") + "\n";
+
+        ws.Send(snd);
     }
 
     private void WSServer_EffectCreated(EffectData data)

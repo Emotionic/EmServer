@@ -84,8 +84,8 @@ class Calibration : MonoBehaviour
             return;
 
         // 青色を検出
-        // var skinMat = ColorExtraction(image, ColorConversionCodes.BGR2HSV, 90, 120, 0, 255, 200, 255);
-         var skinMat = ColorExtraction(image, ColorConversionCodes.BGR2HSV, 90, 120, 0, 255, 200, 255);
+        var skinMat = ColorExtraction(image, ColorConversionCodes.BGR2HSV, 90, 120, 0, 255, 200, 255);
+        // var skinMat = ColorExtraction(image, ColorConversionCodes.BGR2HSV, 90, 120, 0, 255, 220, 255);
 
         ConnectedComponents cc = Cv2.ConnectedComponentsEx(skinMat);
 
