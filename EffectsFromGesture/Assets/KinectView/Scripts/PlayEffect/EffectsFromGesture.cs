@@ -260,14 +260,14 @@ namespace Assets.KinectView.Scripts
                         pos = _Joints[id][(JointType)Enum.Parse(typeof(JointType), parts)].transform.position;
                         var h = EffekseerSystem.PlayEffect(effectName, pos);
                         h.SetScale(GetScaleVec(eOption.Value.Scale));
-                        SendEffect(
-                            effectName,
-                            pos,
-                            FloatListToColor(eOption.Value.Color),
-                            eOption.Value.IsRainbow,
-                            GetScaleVec(eOption.Value.Scale),
-                            Quaternion.identity
-                        );
+                        //SendEffect(
+                        //    effectName,
+                        //    pos,
+                        //    FloatListToColor(eOption.Value.Color),
+                        //    eOption.Value.IsRainbow,
+                        //    GetScaleVec(eOption.Value.Scale),
+                        //    Quaternion.identity
+                        //);
 
                     }
                 }
@@ -359,20 +359,20 @@ namespace Assets.KinectView.Scripts
 
                 // データをEmClientに送信
                 // だいたい5fpsくらいにする
-                if (_timeLeft[i] <= 0)
-                {
-                    _timeLeft[i] = (1.0f / 5);
+                //if (_timeLeft[i] <= 0)
+                //{
+                //    _timeLeft[i] = (1.0f / 5);
 
-                    SendEffect(
-                        "LINE_" + joints[i].name,
-                        joints[i].transform.position,
-                        FloatListToColor(eOption.Color),
-                        eOption.IsRainbow,
-                        GetScaleVec(eOption.Scale),
-                        Quaternion.identity
-                    );
+                //    SendEffect(
+                //        "LINE_" + joints[i].name,
+                //        joints[i].transform.position,
+                //        FloatListToColor(eOption.Color),
+                //        eOption.IsRainbow,
+                //        GetScaleVec(eOption.Scale),
+                //        Quaternion.identity
+                //    );
 
-                }
+                //}
 
             }
 
