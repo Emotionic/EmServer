@@ -257,7 +257,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 512b0030374da364592fd7a40ed4500b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  StartColor: {r: 0, g: 0, b: 0, a: 0}
+  StartColor: {r: 1, g: 1, b: 1, a: 0}
 --- !u!198 &198001928805582304
 ParticleSystem:
   m_ObjectHideFlags: 1

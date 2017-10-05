@@ -299,7 +299,7 @@ GameObject:
   - component: {fileID: 595797493}
   m_Layer: 0
   m_Name: Recorder
-  m_TagString: MainCamera
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -527,7 +527,7 @@ Camera:
   far clip plane: 1000
   field of view: 33
   orthographic: 1
-  orthographic size: 2.35
+  orthographic size: 5.43
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
@@ -1287,7 +1287,6 @@ GameObject:
   - component: {fileID: 1747301864}
   - component: {fileID: 1747301863}
   - component: {fileID: 1747301862}
-  - component: {fileID: 1747301861}
   - component: {fileID: 1747301866}
   - component: {fileID: 1747301867}
   - component: {fileID: 1747301868}
@@ -1298,13 +1297,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &1747301861
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1747301860}
-  m_Enabled: 1
 --- !u!124 &1747301862
 Behaviour:
   m_ObjectHideFlags: 0
@@ -1470,6 +1462,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f25504797b8f3b4884a758bfb78602f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  MainCamera: {fileID: 1747301864}
 --- !u!1 &1935534570
 GameObject:
   m_ObjectHideFlags: 0
@@ -1510,8 +1503,8 @@ MonoBehaviour:
   Cube: {fileID: 719518876}
   Audio: {fileID: 1747301867}
   Clip: {fileID: 8300000, guid: e333e24cdfe31564ea03698474fd7528, type: 3}
-  Recoder: {fileID: 595797493}
-  cap: {fileID: 8400000, guid: 58b1074c88958884a991fd8e6e5d8f50, type: 2}
+  Recoder: {fileID: 0}
+  cap: {fileID: 0}
   PlayNewBodySound: 1
 --- !u!4 &1935534572
 Transform:

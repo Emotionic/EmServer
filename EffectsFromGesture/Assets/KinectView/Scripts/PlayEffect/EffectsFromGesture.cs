@@ -97,6 +97,8 @@ namespace Assets.KinectView.Scripts
 
         private int _bodyCount = 0;
 
+        private Color _CameraBackColor = Color.black;
+
         // Use this for initialization
         void Start()
         {
@@ -206,16 +208,18 @@ namespace Assets.KinectView.Scripts
                     fw = Instantiate(FireWorks_Botan, LaunchPad.transform);
                     ps = fw.GetComponent<ParticleSystem>();
                     fwm = fw.GetComponent<FireWorksManager>();
-                    ps.startLifetime = Calibration.RectSize.Height / 5f / 100f;
+                    ps.startLifetime = (Calibration.RectSize.Height / 5f) / 100f;
                     fwm.StartColor = data.color;
+                    ps.Play(true);
                     Destroy(fw.gameObject, 7);
                     break;
                 case "star":
                     fw = Instantiate(FireWorks_Senrin, LaunchPad.transform);
                     ps = fw.GetComponent<ParticleSystem>();
                     fwm = fw.GetComponent<FireWorksManager>();
-                    ps.startLifetime = Calibration.RectSize.Height / 5f / 100f;
+                    ps.startLifetime = (Calibration.RectSize.Height / 5f) / 100f;
                     fwm.StartColor = data.color;
+                    ps.Play(true);
                     Destroy(fw.gameObject, 7);
                     break;
             }
@@ -236,7 +240,6 @@ namespace Assets.KinectView.Scripts
 
             if(!_IsRegMethod)
             {
-                Debug.Log("REG");
                 _GestureManager.GestureDetected += _GestureManager_GestureDetected;
                 _IsRegMethod = true;
             }
@@ -261,7 +264,11 @@ namespace Assets.KinectView.Scripts
             {
                 Recoder.EndRecording();
             }
-
+            
+            Camera.main.backgroundColor = _CameraBackColor;
+            if (_CameraBackColor != Color.black)
+                _CameraBackColor = Color.black;
+            
             // 時間制限
             if (_Customize.TimeLimit != 0)
             {
@@ -313,14 +320,14 @@ namespace Assets.KinectView.Scripts
                         pos = _Joints[id][(JointType)Enum.Parse(typeof(JointType), parts)].transform.position;
                         var h = EffekseerSystem.PlayEffect(effectName, pos);
                         h.SetScale(GetScaleVec(eOption.Value.Scale));
-                        SendEffect(
-                            effectName,
-                            pos,
-                            FloatListToColor(eOption.Value.Color),
-                            eOption.Value.IsRainbow,
-                            GetScaleVec(eOption.Value.Scale),
-                            Quaternion.identity
-                        );
+                        //SendEffect(
+                        //    effectName,
+                        //    pos,
+                        //    FloatListToColor(eOption.Value.Color),
+                        //    eOption.Value.IsRainbow,
+                        //    GetScaleVec(eOption.Value.Scale),
+                        //    Quaternion.identity
+                        //);
 
                     }
                 }
@@ -411,18 +418,19 @@ namespace Assets.KinectView.Scripts
                 }
 
                 // データをEmClientに送信
+                // だいたい5fpsくらいにする
                 if (_timeLeft[i] <= 0)
                 {
-                    _timeLeft[i] = (1.0f / 2);
+                    _timeLeft[i] = (1.0f / 5);
 
-                    SendEffect(
-                        "LINE_" + joints[i].name,
-                        joints[i].transform.position,
-                        FloatListToColor(eOption.Color),
-                        eOption.IsRainbow,
-                        GetScaleVec(eOption.Scale),
-                        Quaternion.identity
-                    );
+                //    SendEffect(
+                //        "LINE_" + joints[i].name,
+                //        joints[i].transform.position,
+                //        FloatListToColor(eOption.Color),
+                //        eOption.IsRainbow,
+                //        GetScaleVec(eOption.Scale),
+                //        Quaternion.identity
+                //    );
 
                 }
 
