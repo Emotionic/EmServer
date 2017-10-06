@@ -102,6 +102,8 @@ namespace Assets.KinectView.Scripts
 
         private Color _CameraBackColor = Color.black;
 
+        private EffectAttributes _TestEA;
+
         // Use this for initialization
         void Start()
         {
@@ -145,7 +147,7 @@ namespace Assets.KinectView.Scripts
 
             // 音声認識イベントの登録
             GameObject.Find("VoiceManager").GetComponent<VoiceManager>().Recognized += EffectsFromGesture_Recognized;
-
+            
         }
 
         private void _WSServer_EndPerform()
@@ -270,6 +272,7 @@ namespace Assets.KinectView.Scripts
             {
                 Recoder.EndRecording();
             }
+
             
             Camera.main.backgroundColor = _CameraBackColor;
             if (_CameraBackColor != Color.black)
@@ -329,6 +332,7 @@ namespace Assets.KinectView.Scripts
                         {
                             case EffectAttributes.EffectType.Effekseer:
                                 var h = EffekseerSystem.PlayEffect(effectName, transform.position);
+                                h.SetRotation(Quaternion.Euler(new Vector3(0, 90, 0)));
                                 h.SetScale(GetScaleVec(eOption.Value.Scale));
                                 break;
 
