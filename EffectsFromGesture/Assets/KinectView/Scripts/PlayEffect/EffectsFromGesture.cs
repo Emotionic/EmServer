@@ -137,11 +137,11 @@ namespace Assets.KinectView.Scripts
             // Add effect attributes
             _GestureFromEffectAttributes = new Dictionary<string, EffectAttributes>();
             _GestureFromEffectAttributes["Jump"] = new EffectAttributes(0.3, JointType.SpineMid, 1, _EffectNames[0]);
-            _GestureFromEffectAttributes["Punch"] = new EffectAttributes(0.2, JointType.HandRight, 1, Emotionic.Effect.Ripple);
+            _GestureFromEffectAttributes["Punch"] = new EffectAttributes(0.15, JointType.HandRight, 1, Emotionic.Effect.Ripple);
             _GestureFromEffectAttributes["ChimpanzeeClap_Left"] = new EffectAttributes(0.25, JointType.HandTipLeft, 0.1f, Emotionic.Effect.Clap);
             _GestureFromEffectAttributes["ChimpanzeeClap_Right"] = new EffectAttributes(0.25, JointType.HandTipRight, 0.1f, Emotionic.Effect.Clap);
             _GestureFromEffectAttributes["Daisuke"] = new EffectAttributes(0.3, JointType.Head, 3, _EffectNames[0]);
-            _GestureFromEffectAttributes["Kamehameha"] = new EffectAttributes(0.2, JointType.HandLeft, 1, Emotionic.Effect.Beam);
+            _GestureFromEffectAttributes["Kamehameha"] = new EffectAttributes(0.25, JointType.HandLeft, 1, Emotionic.Effect.Beam);
             
             _RbColor = new RainbowColor(0, 0.001f);
 
@@ -381,11 +381,40 @@ namespace Assets.KinectView.Scripts
                         effe.transform.position = _Joints[id][ea.AttachPosition].transform.position;
 
                         // rotate
-                        if (_Joints[id][ea.AttachPosition].transform.position.x < _Joints[id][JointType.SpineMid].transform.position.x)
+                        switch(ea.EffectKey)
                         {
-                            effe.transform.Rotate(new Vector3(0, 180, 0));
+                            case Emotionic.Effect.Beam:
+                                if (_Joints[id][ea.AttachPosition].transform.position.x < _Joints[id][JointType.SpineMid].transform.position.x)
+                                {
+                                    effe.transform.Rotate(new Vector3(0, 180, 0));
+                                }
+                                break;
+                            case Emotionic.Effect.Ripple:
+                                if (_Joints[id][ea.AttachPosition].transform.position.x < _Joints[id][JointType.SpineMid].transform.position.x)
+                                {
+                                    if (_Joints[id][JointType.HandLeft].transform.position.x < _Joints[id][JointType.HandRight].transform.position.x)
+                                    {
+                                        effe.transform.position = _Joints[id][JointType.HandRight].transform.position;
+                                    }
+                                    else
+                                    {
+                                        effe.transform.position = _Joints[id][JointType.HandLeft].transform.position;
+                                    }
+                                }
+                                else
+                                {
+                                    if (_Joints[id][JointType.HandLeft].transform.position.x < _Joints[id][JointType.HandRight].transform.position.x)
+                                    {
+                                        effe.transform.position = _Joints[id][JointType.HandLeft].transform.position;
+                                    }                                    
+                                    else
+                                    {
+                                        effe.transform.position = _Joints[id][JointType.HandRight].transform.position;
+                                    }
+                                }
+                                break;
                         }
-
+                        
                         effe.GetComponent<ParticleSystem>().Play(true);
                         Destroy(effe.gameObject, 10);
 
