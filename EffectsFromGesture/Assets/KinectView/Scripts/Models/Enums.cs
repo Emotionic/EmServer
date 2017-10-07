@@ -21,6 +21,7 @@ namespace Emotionic
         Impact,
         Beam,
         Ripple,
-        Punch
+        Punch,
+        Clap
     }
 }
