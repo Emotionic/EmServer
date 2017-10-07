@@ -77,6 +77,13 @@ namespace Assets.KinectView.Scripts
             { Emotionic.Effect.Ripple, "punch" }
         };
 
+        private readonly Dictionary<Emotionic.Effect, GameObject> _EffectPrefabs = new Dictionary<Emotionic.Effect, GameObject>()
+        {
+            { Emotionic.Effect.Beam, Resources.Load<GameObject>("Prefabs/KamehameCharge") },
+            { Emotionic.Effect.Ripple, Resources.Load<GameObject>("Prefabs/punch")},
+            {Emotionic.Effect.Ripple, Resources.Load<GameObject>("Prefabs/clap_effe") }
+        };
+
         private GestureManager _GestureManager;
 
         private bool _IsRegMethod = false;
@@ -131,11 +138,11 @@ namespace Assets.KinectView.Scripts
             // Add effect attributes
             _GestureFromEffectAttributes = new Dictionary<string, EffectAttributes>();
             _GestureFromEffectAttributes["Jump"] = new EffectAttributes(0.35, JointType.SpineMid, 1, _EffectNames[0]);
-            _GestureFromEffectAttributes["Punch"] = new EffectAttributes(0.3, JointType.HandRight, 1, Resources.Load("Prefabs/jump_and_clap_ripple") as GameObject);
-            _GestureFromEffectAttributes["ChimpanzeeClap_Left"] = new EffectAttributes(0.3, JointType.HandTipLeft, 1, Resources.Load("Prefabs/clap_effe") as GameObject);
-            _GestureFromEffectAttributes["ChimpanzeeClap_Right"] = new EffectAttributes(0.3, JointType.HandTipRight, 1, Resources.Load("Prefabs/clap_effe") as GameObject);
+            _GestureFromEffectAttributes["Punch"] = new EffectAttributes(0.3, JointType.HandRight, 1, Emotionic.Effect.Ripple);
+            _GestureFromEffectAttributes["ChimpanzeeClap_Left"] = new EffectAttributes(0.3, JointType.HandTipLeft, 1, Emotionic.Effect.Clap);
+            _GestureFromEffectAttributes["ChimpanzeeClap_Right"] = new EffectAttributes(0.3, JointType.HandTipRight, 1, Emotionic.Effect.Clap);
             _GestureFromEffectAttributes["Daisuke"] = new EffectAttributes(0.4, JointType.Head, 3, _EffectNames[0]);
-            _GestureFromEffectAttributes["Kamehameha"] = new EffectAttributes(0.2, JointType.HandLeft, 1, _EffectNames[2]);
+            _GestureFromEffectAttributes["Kamehameha"] = new EffectAttributes(0.2, JointType.HandLeft, 1, Emotionic.Effect.Beam);
             
             _RbColor = new RainbowColor(0, 0.001f);
 
@@ -332,7 +339,7 @@ namespace Assets.KinectView.Scripts
                                 break;
 
                             case EffectAttributes.EffectType.ParticleSystem:
-                                var effe = Instantiate(ea.Effect, transform);
+                                var effe = Instantiate(_EffectPrefabs[ea.EffectKey], transform);
                                 effe.transform.position = _Joints[id][ea.AttachPosition].transform.position;
                                 effe.GetComponent<ParticleSystem>().Play(true);
                                 Destroy(effe.gameObject, 10);
@@ -361,7 +368,7 @@ namespace Assets.KinectView.Scripts
                         break;
 
                     case EffectAttributes.EffectType.ParticleSystem:
-                        var effe = Instantiate(ea.Effect, _Joints[id][ea.AttachPosition].transform);
+                        var effe = Instantiate(_EffectPrefabs[ea.EffectKey], _Joints[id][ea.AttachPosition].transform);
                         effe.transform.position = _Joints[id][ea.AttachPosition].transform.position;
                         effe.GetComponent<ParticleSystem>().Play(true);
                         Destroy(effe.gameObject, 10);

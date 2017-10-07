@@ -13,8 +13,8 @@ class EffectAttributes
     public Vector3 Scale { get; private set; }
 
     public string EffectName { get; private set; }
-    public GameObject Effect { get; private set; }
-
+    public Emotionic.Effect EffectKey { get; private set; }
+    
     public EffectAttributes(double threshold, JointType jt, float scale)
     {
         Threshold = threshold;
@@ -29,10 +29,10 @@ class EffectAttributes
         Type = EffectType.Effekseer;
     }
 
-    public EffectAttributes(double threshold, JointType jt, float scale, GameObject effect)
+    public EffectAttributes(double threshold, JointType jt, float scale,Emotionic.Effect effectKey)
         : this (threshold, jt, scale)
     {
-        Effect = effect;
+        EffectKey = effectKey;
         Type = EffectType.ParticleSystem;
     }
 
