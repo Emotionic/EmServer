@@ -136,12 +136,12 @@ namespace Assets.KinectView.Scripts
 
             // Add effect attributes
             _GestureFromEffectAttributes = new Dictionary<string, EffectAttributes>();
-            _GestureFromEffectAttributes["Jump"] = new EffectAttributes(0.35, JointType.SpineMid, 1, _EffectNames[0]);
-            _GestureFromEffectAttributes["Punch"] = new EffectAttributes(0.3, JointType.HandRight, 1, Emotionic.Effect.Ripple);
-            _GestureFromEffectAttributes["ChimpanzeeClap_Left"] = new EffectAttributes(0.3, JointType.HandTipLeft, 0.1f, Emotionic.Effect.Clap);
-            _GestureFromEffectAttributes["ChimpanzeeClap_Right"] = new EffectAttributes(0.3, JointType.HandTipRight, 0.1f, Emotionic.Effect.Clap);
-            _GestureFromEffectAttributes["Daisuke"] = new EffectAttributes(0.4, JointType.Head, 3, _EffectNames[0]);
-            _GestureFromEffectAttributes["Kamehameha"] = new EffectAttributes(0.02, JointType.HandLeft, 1, Emotionic.Effect.Beam);
+            _GestureFromEffectAttributes["Jump"] = new EffectAttributes(0.3, JointType.SpineMid, 1, _EffectNames[0]);
+            _GestureFromEffectAttributes["Punch"] = new EffectAttributes(0.2, JointType.HandRight, 1, Emotionic.Effect.Ripple);
+            _GestureFromEffectAttributes["ChimpanzeeClap_Left"] = new EffectAttributes(0.25, JointType.HandTipLeft, 0.1f, Emotionic.Effect.Clap);
+            _GestureFromEffectAttributes["ChimpanzeeClap_Right"] = new EffectAttributes(0.25, JointType.HandTipRight, 0.1f, Emotionic.Effect.Clap);
+            _GestureFromEffectAttributes["Daisuke"] = new EffectAttributes(0.3, JointType.Head, 3, _EffectNames[0]);
+            _GestureFromEffectAttributes["Kamehameha"] = new EffectAttributes(0.2, JointType.HandLeft, 1, Emotionic.Effect.Beam);
             
             _RbColor = new RainbowColor(0, 0.001f);
 
