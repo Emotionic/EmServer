@@ -168,7 +168,6 @@ namespace Assets.KinectView.Scripts
                     Audio.PlayOneShot(Clip);
 
                     var path = Environment.CurrentDirectory + "/Capture/" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".png";
-                    Debug.Log("[DEBUG!] " + path);
 
                     Texture2D tex = new Texture2D(cap.width, cap.height, TextureFormat.RGB24, false);
                     RenderTexture.active = cap;
@@ -340,14 +339,13 @@ namespace Assets.KinectView.Scripts
                                 break;
                         }
 
-                        //SendEffect(
-                        //    effectName,
-                        //    pos,
-                        //    FloatListToColor(eOption.Value.Color),
-                        //    eOption.Value.IsRainbow,
-                        //    GetScaleVec(eOption.Value.Scale),
-                        //    Quaternion.identity
-                        //);
+                        StartCoroutine(SendEffect(
+                            effectName,
+                            Camera.main.WorldToViewportPoint(_Joints[id][ea.AttachPosition].transform.position),
+                            FloatListToColor(eOption.Value.Color),
+                            GetScaleVec(eOption.Value.Scale),
+                            Quaternion.identity
+                        ));
 
                     }
                 }
@@ -450,19 +448,17 @@ namespace Assets.KinectView.Scripts
                 }
 
                 // データをEmClientに送信
-                // だいたい5fpsくらいにする
                 if (_timeLeft[i] <= 0)
                 {
                     _timeLeft[i] = (1.0f / 5);
 
-                //    SendEffect(
-                //        "LINE_" + joints[i].name,
-                //        joints[i].transform.position,
-                //        FloatListToColor(eOption.Color),
-                //        eOption.IsRainbow,
-                //        GetScaleVec(eOption.Scale),
-                //        Quaternion.identity
-                //    );
+                    StartCoroutine(SendEffect(
+                        "LINE_" + joints[i].name,
+                        joints[i].transform.position,
+                        eOption.IsRainbow ? _RbColor.Rainbow : FloatListToColor(eOption.Color),
+                        GetScaleVec(eOption.Scale),
+                        Quaternion.identity
+                    ));
 
                 }
 
@@ -483,9 +479,10 @@ namespace Assets.KinectView.Scripts
             return col;
         }
 
-        private void SendEffect(string name, Vector3 pos, Color color, Vector3 scale, Quaternion rotation)
+        private IEnumerator SendEffect(string name, Vector3 pos, Color color, Vector3 scale, Quaternion rotation)
         {
-            if (!IsConnected) return;
+            if (!IsConnected)
+                yield break;
 
             var data = new EffectData();
             data.Name = name;
