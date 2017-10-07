@@ -335,13 +335,14 @@ namespace Assets.KinectView.Scripts
                         {
                             case EffectAttributes.EffectType.Effekseer:
                                 var h = EffekseerSystem.PlayEffect(effectName, transform.position);
-                                h.SetRotation(Quaternion.Euler(new Vector3(0, 90, 0)));
+                                h.SetRotation(_Joints[id][ea.AttachPosition].transform.rotation);
                                 h.SetScale(GetScaleVec(eOption.Value.Scale));
                                 break;
 
                             case EffectAttributes.EffectType.ParticleSystem:
                                 var effe = Instantiate(_EffectPrefabs[ea.EffectKey], transform);
                                 effe.transform.position = _Joints[id][ea.AttachPosition].transform.position;
+                                effe.transform.rotation = _Joints[id][ea.AttachPosition].transform.rotation;
                                 effe.GetComponent<ParticleSystem>().Play(true);
                                 Destroy(effe.gameObject, 10);
                                 break;
@@ -366,12 +367,13 @@ namespace Assets.KinectView.Scripts
                     case EffectAttributes.EffectType.Effekseer:
                         var h = EffekseerSystem.PlayEffect(ea.EffectName, _Joints[id][ea.AttachPosition].transform.position);
                         h.SetScale(ea.Scale);
-                        h.SetRotation(Quaternion.Euler(new Vector3(0, 90, 0)));
+                        h.SetRotation(_Joints[id][ea.AttachPosition].transform.rotation);
                         break;
 
                     case EffectAttributes.EffectType.ParticleSystem:
                         var effe = Instantiate(_EffectPrefabs[ea.EffectKey], _Joints[id][ea.AttachPosition].transform);
                         effe.transform.position = _Joints[id][ea.AttachPosition].transform.position;
+                        effe.transform.rotation = _Joints[id][ea.AttachPosition].transform.rotation;
                         effe.GetComponent<ParticleSystem>().Play(true);
                         Destroy(effe.gameObject, 10);
                         break;
