@@ -222,7 +222,7 @@ public class WSServer : MonoBehaviour
         snd += "GENEFF\n";
         snd += JsonUtility.ToJson(data) + "\n";
 
-        ws.Send(snd);
+        ws.SendAsync(snd, b => { });
     }
 
     private void ReplyAR()
