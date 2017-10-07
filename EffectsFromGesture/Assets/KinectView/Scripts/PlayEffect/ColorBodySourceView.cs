@@ -205,6 +205,8 @@ public class ColorBodySourceView : MonoBehaviour
     private GameObject CreateBodyObject(ulong id)
     {
         GameObject body = new GameObject(id.ToString());
+        var floor = _BodyManager.FloorClipPlane;
+        var comp = Quaternion.FromToRotation(new Vector3(floor.X, floor.Y, floor.Z), Vector3.up);
 
         JointsFromBodies[id] = new Dictionary<Kinect.JointType, GameObject>();
         for (Kinect.JointType jt = Kinect.JointType.SpineBase; jt <= Kinect.JointType.ThumbRight; jt++)
@@ -220,6 +222,7 @@ public class ColorBodySourceView : MonoBehaviour
                 lr.endWidth = 0.05f;
             }
 
+            jointObj.transform.rotation = _BodyManager.GetJointOrientations(id)[jt].Orientation.ToQuaternion(comp);
             jointObj.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
             jointObj.name = jt.ToString();
             jointObj.transform.parent = body.transform;

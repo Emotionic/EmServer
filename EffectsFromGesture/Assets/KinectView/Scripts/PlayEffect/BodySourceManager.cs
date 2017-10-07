@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
 using Windows.Kinect;
 
@@ -21,16 +22,17 @@ public class BodySourceManager : MonoBehaviour
 
     public Windows.Kinect.Vector4 FloorClipPlane { get; private set; }
 
-    public List<Windows.Kinect.Vector4> GetJointOrientations(JointType jt)
+    public Dictionary<JointType, JointOrientation> GetJointOrientations(ulong id)
     {
-        List<Windows.Kinect.Vector4> orientations = new List<Windows.Kinect.Vector4>();
-        
-        foreach(var body in GetData())
+        foreach(var body in _Data)
         {
-            orientations.Add(body.JointOrientations[jt].Orientation);
+            if(body.TrackingId == id)
+            {
+                return body.JointOrientations;
+            }
         }
 
-        return orientations;
+        throw new System.ArgumentException();
     }
 
     void Start () 
