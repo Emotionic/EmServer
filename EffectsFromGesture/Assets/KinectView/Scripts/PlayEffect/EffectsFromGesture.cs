@@ -73,8 +73,7 @@ namespace Assets.KinectView.Scripts
 
         private readonly Dictionary<Emotionic.Effect, string> _EffectRelation = new Dictionary<Emotionic.Effect, string>()
         {
-            { Emotionic.Effect.Impact, "StairBroken" },
-            { Emotionic.Effect.Ripple, "punch" }
+            { Emotionic.Effect.Impact, "StairBroken" }
         };
 
         private readonly Dictionary<Emotionic.Effect, GameObject> _EffectPrefabs = new Dictionary<Emotionic.Effect, GameObject>()
@@ -331,36 +330,33 @@ namespace Assets.KinectView.Scripts
                 Transform transform;
                 string effectName;
 
-                foreach (var eOption in _Customize.EffectsCustomize[gesture])
+                foreach (var custom in _Customize.EffectsCustomize[gesture])
                 {
-                    effectName = _EffectRelation[eOption.Key];
-                    foreach (var parts in eOption.Value.AttachedParts)
+                    foreach (var parts in custom.Value.AttachedParts)
                     {
                         transform = _Joints[id][(JointType)Enum.Parse(typeof(JointType), parts)].transform;
 
-                        switch (ea.Type)
+                        if (_EffectRelation.ContainsKey(custom.Key))
                         {
-                            case EffectAttributes.EffectType.Effekseer:
-                                var h = EffekseerSystem.PlayEffect(effectName, transform.position);
-                                h.SetRotation(_Joints[id][ea.AttachPosition].transform.rotation);
-                                h.SetScale(GetScaleVec(eOption.Value.Scale));
-                                break;
-
-                            case EffectAttributes.EffectType.ParticleSystem:
-                                var effe = Instantiate(_EffectPrefabs[ea.EffectKey], transform);
-                                effe.transform.position = _Joints[id][ea.AttachPosition].transform.position;
-                                effe.transform.rotation = _Joints[id][ea.AttachPosition].transform.rotation;
-                                effe.GetComponent<ParticleSystem>().Play(true);
-                                Destroy(effe.gameObject, 10);
-                                break;
+                            var h = EffekseerSystem.PlayEffect(_EffectRelation[custom.Key], transform.position);
+                            h.SetRotation(transform.rotation);
+                            h.SetScale(GetScaleVec(custom.Value.Scale));
+                        }
+                        else
+                        {
+                            var effe = Instantiate(_EffectPrefabs[custom.Key], transform);
+                            effe.transform.position = transform.position;
+                            effe.transform.rotation = transform.rotation;
+                            effe.GetComponent<ParticleSystem>().Play(true);
+                            Destroy(effe.gameObject, 10);
                         }
 
                         StartCoroutine(SendEffect(
-                            effectName,
-                            Camera.main.WorldToViewportPoint(_Joints[id][ea.AttachPosition].transform.position),
-                            FloatListToColor(eOption.Value.Color),
-                            GetScaleVec(eOption.Value.Scale),
-                            Quaternion.identity
+                            custom.Key.ToString(),
+                            _Joints[id][ea.AttachPosition].transform.position,
+                            FloatListToColor(custom.Value.Color),
+                            GetScaleVec(custom.Value.Scale),
+                            transform.rotation
                         ));
 
                     }
