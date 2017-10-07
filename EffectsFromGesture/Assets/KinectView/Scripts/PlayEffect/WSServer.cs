@@ -38,7 +38,7 @@ public class WSServer : MonoBehaviour
 
     private Canvas _Canvas;
 
-    private const string EnabledJoinTyoe = "001";
+    private const string EnabledJoinType = "1001";
 
     public void OnMainSceneLoaded()
     {
@@ -151,7 +151,7 @@ public class WSServer : MonoBehaviour
                             // キャリブレーションの開始
                             snd = "PERFORMER\n";
                             snd += "CALIB_OK\n";
-                            snd += EnabledJoinTyoe;
+                            snd += EnabledJoinType;
                             ws.Send(snd);
 
                             break;
@@ -186,6 +186,12 @@ public class WSServer : MonoBehaviour
                             var data = JsonUtility.FromJson<LikeData>(msg[2]);
                             Like(data);
 
+                            break;
+
+                        /* 再起動 */
+                        case "RESTART":
+                            initCustomized = false;
+                            SceneManager.LoadScene("WaitPerformer");
                             break;
 
                         /* 演技の終了 */

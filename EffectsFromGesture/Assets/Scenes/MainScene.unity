@@ -1503,8 +1503,8 @@ MonoBehaviour:
   Cube: {fileID: 719518876}
   Audio: {fileID: 1747301867}
   Clip: {fileID: 8300000, guid: e333e24cdfe31564ea03698474fd7528, type: 3}
-  Recoder: {fileID: 0}
-  cap: {fileID: 0}
+  Recorder: {fileID: 595797493}
+  cap: {fileID: 8400000, guid: 58b1074c88958884a991fd8e6e5d8f50, type: 2}
   PlayNewBodySound: 1
 --- !u!4 &1935534572
 Transform:

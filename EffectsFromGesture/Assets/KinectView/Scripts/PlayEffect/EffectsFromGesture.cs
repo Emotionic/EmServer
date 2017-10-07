@@ -42,7 +42,7 @@ namespace Assets.KinectView.Scripts
 
         public AudioClip Clip;
 
-        public RecorderBase Recoder;
+        public RecorderBase Recorder;
 
         public RenderTexture cap;
 
@@ -81,7 +81,7 @@ namespace Assets.KinectView.Scripts
         {
             { Emotionic.Effect.Beam, Resources.Load<GameObject>("Prefabs/KamehameCharge") },
             { Emotionic.Effect.Ripple, Resources.Load<GameObject>("Prefabs/punch")},
-            {Emotionic.Effect.Clap, Resources.Load<GameObject>("Prefabs/clap_effe") }
+            {Emotionic.Effect.Ripple, Resources.Load<GameObject>("Prefabs/clap_effe") }
         };
 
         private GestureManager _GestureManager;
@@ -155,16 +155,28 @@ namespace Assets.KinectView.Scripts
 
             // 音声認識イベントの登録
             GameObject.Find("VoiceManager").GetComponent<VoiceManager>().Recognized += EffectsFromGesture_Recognized;
-            
+
+            var path = new DataPath(DataPath.Root.Current, "Capture/" + DateTime.Now.ToString("yyyyMMdd_HHmmss"));
+            path.CreateDirectory();
+            Recorder.outputDir = path;
+
+            Recorder.BeginRecording();
+
         }
 
         private void _WSServer_EndPerform()
         {
             // 演技の終了時
-            if (Recoder.isRecording)
-                Recoder.EndRecording();
-            SceneManager.LoadScene("FinishScene");
+            EndPerform();
+        }
 
+        private void EndPerform()
+        {
+            /* TODO : 連番png ffmpegによる出力 */
+
+            if (Recorder.isRecording)
+                Recorder.EndRecording();
+            SceneManager.LoadScene("FinishScene");
         }
 
         private void EffectsFromGesture_Recognized(string keyword)
@@ -204,7 +216,7 @@ namespace Assets.KinectView.Scripts
             {
                 if (_Customize.DoShare)
                 {
-                    Recoder.BeginRecording();
+                    Recorder.BeginRecording();
                 }
 
                 initCustomized = true;
@@ -272,39 +284,30 @@ namespace Assets.KinectView.Scripts
             }
 
             _RbColor.Update();
-
-            if (Input.GetKeyDown(KeyCode.S))
-            {
-                Recoder.EndRecording();
-            }
-
             
             Camera.main.backgroundColor = _CameraBackColor;
             if (_CameraBackColor != Color.black)
                 _CameraBackColor = Color.black;
-            
-            // 時間制限
-            if(_Customize != null)
+
+            if (IsConnected)
             {
-                if (_Customize.TimeLimit != 0)
+                // 時間制限
+                if (_Customize != null && _Customize.TimeLimit != 0)
                 {
                     if ((_Customize.TimeLimit * 60) - (Time.realtimeSinceStartup - _StartedTime) <= 0)
                     {
                         // 時間経過 -> シーン遷移
                         _WSServer.OnPerformEndedAuto();
-                        if (Recoder.isRecording)
-                            Recoder.EndRecording();
-                        SceneManager.LoadScene("FinishScene");
+                        EndPerform();
                     }
                 }
 
                 // 残像切り替え
                 Cube.SetActive(_Customize.IsZNZOVisibled);
 
+                for (var i = 0; i < 6; i++)
+                    _timeLeft[i] -= Time.deltaTime;
             }
-
-            for (var i = 0; i < 6; i++)
-                _timeLeft[i] -= Time.deltaTime;
 
         }
 
@@ -379,7 +382,6 @@ namespace Assets.KinectView.Scripts
                         effe.transform.rotation = _Joints[id][ea.AttachPosition].transform.rotation;
                         effe.GetComponent<ParticleSystem>().Play(true);
                         Destroy(effe.gameObject, 10);
-                        Debug.Log("[EFFECT]" + ea.EffectKey.ToString() + " at " + effe.transform.position + " roll " + effe.transform.rotation);
                         break;
                 }
             }
@@ -496,7 +498,7 @@ namespace Assets.KinectView.Scripts
 
         private IEnumerator SendEffect(string name, Vector3 pos, Color color, Vector3 scale, Quaternion rotation)
         {
-            if (!IsConnected)
+            if (!IsConnected || _Customize.JoinType.ToString()[0] == '0')
                 yield break;
 
             var data = new EffectData();
