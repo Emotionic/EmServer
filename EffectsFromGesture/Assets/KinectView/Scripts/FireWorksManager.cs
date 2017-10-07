@@ -10,7 +10,7 @@ public class FireWorksManager : MonoBehaviour
     private void Start()
     {
         var components = transform.GetComponentsInChildren<ParticleSystem>();
-        foreach(var component in components)
+        foreach (var component in components)
         {
             component.startColor = StartColor;
         }
@@ -25,7 +25,7 @@ public class FireWorksManager : MonoBehaviour
             new GradientAlphaKey(0.5f, 0.5f),
             new GradientAlphaKey(1f, 1f)
             };
-        
+
         Gradient gradient = new Gradient();
         gradient.SetKeys(gradientColorKey, gradientAlphaKey);
 
@@ -34,10 +34,10 @@ public class FireWorksManager : MonoBehaviour
         color.gradient = gradient;
 
         ParticleSystem.MainModule main = comp.GetComponent<ParticleSystem>().main;
-        
+
         main.startColor = color;
 
-        if(main.childCount >= 1)
+        if(comp.GetChild(0).GetComponent<ParticleSystem>() != null)
         {
             ParticleSystem.MainModule sub = comp.GetChild(0).GetComponent<ParticleSystem>().main;
             sub.startColor = color;
