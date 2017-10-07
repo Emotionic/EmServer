@@ -4,23 +4,21 @@ namespace Emotionic
 {
     public enum Gesture
     {
-        ChimpanzeeClap_Left,
-        ChimpanzeeClap_Right,
-        Daisuke,
-        Kamehameha,
         Jump,
         Punch,
         Specium,
-        Exercise,
+        Daisuke,
+        ChimpanzeeClap,
+        Kamehameha,
         Always
     }
 
     public enum Effect
     {
-        Line,
-        Impact,
-        Beam,
-        Ripple,
-        Punch
+        Line, /* Trail (ラインエフェクト) */
+        Impact, /* StairBroken */
+        Beam, /* KamehameCharge */
+        Ripple, /* jump_and_clap_ripple (拍手) */
+        Clap, /* clap_effe */
     }
 }

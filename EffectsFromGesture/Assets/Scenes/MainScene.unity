@@ -334,7 +334,7 @@ MonoBehaviour:
   m_endTime: 10
   m_recordOnStart: 0
   m_encoderConfigs:
-    format: 4
+    format: 0
     pngEncoderSettings:
       pixelFormat: 0
       maxTasks: 2
@@ -390,8 +390,8 @@ MonoBehaviour:
       audioTargetBitrate: 128000
       audioFlags: 6
       audioMaxTasks: 4
-  m_captureTarget: 0
-  m_targetRT: {fileID: 0}
+  m_captureTarget: 1
+  m_targetRT: {fileID: 8400000, guid: 58b1074c88958884a991fd8e6e5d8f50, type: 2}
   m_captureVideo: 1
   m_captureAudio: 1
   m_shCopy: {fileID: 4800000, guid: 2283fb92223c7914c9096670e29202c8, type: 3}

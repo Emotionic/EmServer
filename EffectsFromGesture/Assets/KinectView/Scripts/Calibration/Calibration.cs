@@ -5,6 +5,8 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using OpenCvSharp;
 using System.Linq;
+using System.IO;
+using Newtonsoft.Json;
 
 class Calibration : MonoBehaviour
 {
@@ -14,6 +16,8 @@ class Calibration : MonoBehaviour
     public GameObject ColorManager;
     
     private ColorSourceManagerForOpenCV _ColorManager;
+
+    private Configure conf;
 
     Mat image;
     
@@ -71,6 +75,23 @@ class Calibration : MonoBehaviour
     
     private void Start()
     {
+        conf = null;
+        var confPath = Environment.CurrentDirectory + @"\conf.json";
+
+        if (File.Exists(confPath))
+        {
+            using (var sr = new StreamReader(confPath, System.Text.Encoding.UTF8))
+            {
+                var json = sr.ReadToEnd();
+                conf = JsonConvert.DeserializeObject<Configure>(json);
+            }
+        }
+
+        if (conf == null)
+        {
+            conf = new Configure();
+        }
+
         _ColorManager = ColorManager.GetComponent<ColorSourceManagerForOpenCV>();
         
         image = new Mat();
@@ -84,8 +105,7 @@ class Calibration : MonoBehaviour
             return;
 
         // 青色を検出
-        var skinMat = ColorExtraction(image, ColorConversionCodes.BGR2HSV, 90, 120, 0, 255, 200, 255);
-        // var skinMat = ColorExtraction(image, ColorConversionCodes.BGR2HSV, 90, 120, 0, 255, 220, 255);
+        var skinMat = ColorExtraction(image, ColorConversionCodes.BGR2HSV, conf.ch1Lower, conf.ch1Upper, conf.ch2Lower, conf.ch2Upper, conf.ch3Lower, conf.ch3Upper);
 
         ConnectedComponents cc = Cv2.ConnectedComponentsEx(skinMat);
 
@@ -97,7 +117,14 @@ class Calibration : MonoBehaviour
         // シーン遷移
         if (count < 0)
         {
-            SceneManager.LoadScene("WaitPerformer");
+            if (conf.forceLocal)
+            {
+                SceneManager.LoadScene("MainScene");
+            }
+            else
+            {
+                SceneManager.LoadScene("WaitPerformer");
+            }
         }
         
         // カメラの座標を合わせてキャリブレーション
