@@ -80,7 +80,7 @@ namespace Assets.KinectView.Scripts
         private readonly Dictionary<Emotionic.Effect, GameObject> _EffectPrefabs = new Dictionary<Emotionic.Effect, GameObject>()
         {
             { Emotionic.Effect.Beam, Resources.Load<GameObject>("Prefabs/KamehameCharge") },
-            { Emotionic.Effect.Punch, Resources.Load<GameObject>("Prefabs/jump_and_clap_ripple")},
+            { Emotionic.Effect.Ripple, Resources.Load<GameObject>("Prefabs/punch")},
             {Emotionic.Effect.Ripple, Resources.Load<GameObject>("Prefabs/clap_effe") }
         };
 

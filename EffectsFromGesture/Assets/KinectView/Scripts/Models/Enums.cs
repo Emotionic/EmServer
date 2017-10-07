@@ -18,7 +18,7 @@ namespace Emotionic
         Line, /* Trail (ラインエフェクト) */
         Impact, /* StairBroken */
         Beam, /* KamehameCharge */
-        Ripple, /* jump_and_clap_ripple (拍手) */
+        Ripple, /* punch */
         Clap, /* clap_effe */
     }
 }
