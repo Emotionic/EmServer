@@ -239,6 +239,9 @@ public class ColorBodySourceView : MonoBehaviour
     /// <param name="body">更新するbodyデータ</param>
     private void RefreshBodyObject(Kinect.Body body)
     {
+        var floor = _BodyManager.FloorClipPlane;
+        var comp = Quaternion.FromToRotation(new Vector3(floor.X, floor.Y, floor.Z), Vector3.up);
+
         for (Kinect.JointType jt = Kinect.JointType.SpineBase; jt <= Kinect.JointType.ThumbRight; jt++)
         {
             Kinect.Joint sourceJoint = body.Joints[jt];
@@ -251,6 +254,7 @@ public class ColorBodySourceView : MonoBehaviour
             
             Transform jointObj = JointsFromBodies[body.TrackingId][jt].transform;
             jointObj.localPosition = GetVector3FromJoint(sourceJoint);
+            jointObj.localRotation = jointObj.transform.rotation = body.JointOrientations[jt].Orientation.ToQuaternion(comp);
 
             if (IsBodyView)
             {

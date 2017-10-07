@@ -675,7 +675,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58efaa5188f353d4192bed7a8deb8386, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  IsBodyView: 0
+  IsBodyView: 1
   BoneMaterial: {fileID: 2100000, guid: f2ea145c63353784985576f08398a815, type: 2}
   BodySourceManager: {fileID: 689630467}
   ConvertCamera: {fileID: 814211668}
@@ -1472,6 +1472,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1935534572}
   - component: {fileID: 1935534571}
+  - component: {fileID: 1935534573}
   m_Layer: 0
   m_Name: EffectEmitter
   m_TagString: Untagged
@@ -1493,12 +1494,6 @@ MonoBehaviour:
   TrailMaterial: {fileID: 2100000, guid: 046ec27f6b755bf4b9fee613c27c393c, type: 2}
   GestureManager: {fileID: 1200099052}
   BodySourceManager: {fileID: 689630467}
-  Trail: {fileID: 1059535331452628, guid: e9f24956af1d56e4ca1ab1e343118b8e, type: 2}
-  Spacium: {fileID: 1723023859568538, guid: df9aaccaed74e4a41966a8657b9a8d18, type: 2}
-  FireWorks_Botan: {fileID: 1680507276254458, guid: ee57b4dd335b39a469608c1622c88be0,
-    type: 2}
-  FireWorks_Senrin: {fileID: 1248671262160786, guid: 26f12985442256c43805817b939dfc75,
-    type: 2}
   LaunchPad: {fileID: 1478798665}
   Cube: {fileID: 719518876}
   Audio: {fileID: 1747301867}
@@ -1519,6 +1514,26 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1935534573
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1935534570}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 632dd6f66ecbda547883fdde739b46d5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Trail: {fileID: 1059535331452628, guid: e9f24956af1d56e4ca1ab1e343118b8e, type: 2}
+  Spacium: {fileID: 1723023859568538, guid: df9aaccaed74e4a41966a8657b9a8d18, type: 2}
+  FireWorks_Botan: {fileID: 1680507276254458, guid: ee57b4dd335b39a469608c1622c88be0,
+    type: 2}
+  FireWorks_Senrin: {fileID: 1248671262160786, guid: 26f12985442256c43805817b939dfc75,
+    type: 2}
+  Clap: {fileID: 1100239462142100, guid: 8670cbeebeffb504da4f56abca05b8e3, type: 2}
+  Punch: {fileID: 1366849137851578, guid: 39b8bce2223c6a148ae8c4595b3971bd, type: 2}
+  Kamehameha: {fileID: 1372421679526868, guid: 8c89e6a7611ca0e44b4c44b6db7f0c30, type: 2}
 --- !u!1 &2093124701
 GameObject:
   m_ObjectHideFlags: 0

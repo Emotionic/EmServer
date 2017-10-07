@@ -2,6 +2,7 @@
 using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Windows.Kinect;
 using Microsoft.Kinect.VisualGestureBuilder;
 using Effekseer;
@@ -22,14 +23,6 @@ namespace Assets.KinectView.Scripts
         public GameObject GestureManager;
         
         public GameObject BodySourceManager;
-
-        public GameObject Trail;
-
-        public GameObject Spacium;
-
-        public GameObject FireWorks_Botan;
-
-        public GameObject FireWorks_Senrin;
 
         public GameObject LaunchPad;
 
@@ -54,6 +47,8 @@ namespace Assets.KinectView.Scripts
 
         private CustomData _Customize;
 
+        private EffectPrefabs _Prefabs;
+
         private bool initCustomized = false;
         
         /// <summary>
@@ -77,13 +72,8 @@ namespace Assets.KinectView.Scripts
             { Emotionic.Effect.Ripple, "punch" }
         };
 
-        private readonly Dictionary<Emotionic.Effect, GameObject> _EffectPrefabs = new Dictionary<Emotionic.Effect, GameObject>()
-        {
-            { Emotionic.Effect.Beam, Resources.Load<GameObject>("Prefabs/KamehameCharge") },
-            { Emotionic.Effect.Ripple, Resources.Load<GameObject>("Prefabs/punch")},
-            {Emotionic.Effect.Ripple, Resources.Load<GameObject>("Prefabs/clap_effe") }
-        };
-
+        private Dictionary<Emotionic.Effect, GameObject> _EffectPrefabs;
+        
         private GestureManager _GestureManager;
 
         private bool _IsRegMethod = false;
@@ -118,6 +108,15 @@ namespace Assets.KinectView.Scripts
             foreach (var efkName in _EffectNames)
                 EffekseerSystem.LoadEffect(efkName);
 
+            _Prefabs = this.GetComponent<EffectPrefabs>();
+
+            _EffectPrefabs = new Dictionary<Emotionic.Effect, GameObject>()
+            {
+                {Emotionic.Effect.Beam, _Prefabs.Kamehameha },
+                {Emotionic.Effect.Clap, _Prefabs.Clap},
+                {Emotionic.Effect.Ripple, _Prefabs.Punch}
+            };
+
             _MainCamera = GameObject.Find("ConvertCamera").GetComponent<Camera>();
 
             if (GameObject.Find("WSServer") != null)
@@ -139,10 +138,10 @@ namespace Assets.KinectView.Scripts
             _GestureFromEffectAttributes = new Dictionary<string, EffectAttributes>();
             _GestureFromEffectAttributes["Jump"] = new EffectAttributes(0.35, JointType.SpineMid, 1, _EffectNames[0]);
             _GestureFromEffectAttributes["Punch"] = new EffectAttributes(0.3, JointType.HandRight, 1, Emotionic.Effect.Ripple);
-            _GestureFromEffectAttributes["ChimpanzeeClap_Left"] = new EffectAttributes(0.3, JointType.HandTipLeft, 1, Emotionic.Effect.Clap);
-            _GestureFromEffectAttributes["ChimpanzeeClap_Right"] = new EffectAttributes(0.3, JointType.HandTipRight, 1, Emotionic.Effect.Clap);
+            _GestureFromEffectAttributes["ChimpanzeeClap_Left"] = new EffectAttributes(0.3, JointType.HandTipLeft, 0.1f, Emotionic.Effect.Clap);
+            _GestureFromEffectAttributes["ChimpanzeeClap_Right"] = new EffectAttributes(0.3, JointType.HandTipRight, 0.1f, Emotionic.Effect.Clap);
             _GestureFromEffectAttributes["Daisuke"] = new EffectAttributes(0.4, JointType.Head, 3, _EffectNames[0]);
-            _GestureFromEffectAttributes["Kamehameha"] = new EffectAttributes(0.2, JointType.HandLeft, 1, Emotionic.Effect.Beam);
+            _GestureFromEffectAttributes["Kamehameha"] = new EffectAttributes(0.02, JointType.HandLeft, 1, Emotionic.Effect.Beam);
             
             _RbColor = new RainbowColor(0, 0.001f);
 
@@ -160,7 +159,7 @@ namespace Assets.KinectView.Scripts
             path.CreateDirectory();
             Recorder.outputDir = path;
 
-            Recorder.BeginRecording();
+            // Recorder.BeginRecording();
 
         }
 
@@ -232,7 +231,7 @@ namespace Assets.KinectView.Scripts
             switch(data.name)
             {
                 case "heart":
-                    fw = Instantiate(FireWorks_Botan, LaunchPad.transform);
+                    fw = Instantiate(_Prefabs.FireWorks_Botan, LaunchPad.transform);
                     ps = fw.GetComponent<ParticleSystem>();
                     fwm = fw.GetComponent<FireWorksManager>();
                     fwm.StartColor = data.color;
@@ -240,7 +239,7 @@ namespace Assets.KinectView.Scripts
                     Destroy(fw.gameObject, 7);
                     break;
                 case "star":
-                    fw = Instantiate(FireWorks_Senrin, LaunchPad.transform);
+                    fw = Instantiate(_Prefabs.FireWorks_Senrin, LaunchPad.transform);
                     ps = fw.GetComponent<ParticleSystem>();
                     fwm = fw.GetComponent<FireWorksManager>();
                     fwm.StartColor = data.color;
@@ -253,13 +252,14 @@ namespace Assets.KinectView.Scripts
         // Update is called once per frame
         void Update()
         {
+
             if (_GestureManager == null || _ColorBodyView == null || _BodyManager == null)
             {
                 _GestureManager = GestureManager.GetComponent<GestureManager>();
                 _BodyManager = BodySourceManager.GetComponent<BodySourceManager>();
                 _ColorBodyView = BodySourceManager.GetComponent<ColorBodySourceView>();
             }
-
+            
             if (_MainCamera == null)
                 _MainCamera = GameObject.Find("ConvertCamera").GetComponent<Camera>();
 
@@ -377,11 +377,19 @@ namespace Assets.KinectView.Scripts
                         break;
 
                     case EffectAttributes.EffectType.ParticleSystem:
-                        var effe = Instantiate(_EffectPrefabs[ea.EffectKey], _Joints[id][ea.AttachPosition].transform);
+                        var effe = Instantiate(_EffectPrefabs[ea.EffectKey]);
                         effe.transform.position = _Joints[id][ea.AttachPosition].transform.position;
-                        effe.transform.rotation = _Joints[id][ea.AttachPosition].transform.rotation;
+
+                        // rotate
+                        if (_Joints[id][ea.AttachPosition].transform.position.x < _Joints[id][JointType.SpineMid].transform.position.x)
+                        {
+                            effe.transform.Rotate(new Vector3(0, 180, 0));
+                        }
+
                         effe.GetComponent<ParticleSystem>().Play(true);
                         Destroy(effe.gameObject, 10);
+
+                        Debug.Log(_Joints[id][ea.AttachPosition].transform.rotation.eulerAngles);
                         break;
                 }
             }
@@ -412,9 +420,9 @@ namespace Assets.KinectView.Scripts
                     if (!_Customize.EffectsCustomize[Emotionic.Gesture.Always].ContainsKey(Emotionic.Effect.Line)
                         || !_Customize.EffectsCustomize[Emotionic.Gesture.Always][Emotionic.Effect.Line].AttachedParts.Contains(joints[i].name))
                     {
-                        if (joints[i].transform.Find(Trail.name) != null)
+                        if (joints[i].transform.Find(_Prefabs.Trail.name) != null)
                         {
-                            Destroy(joints[i].transform.Find(Trail.name).gameObject);
+                            Destroy(joints[i].transform.Find(_Prefabs.Trail.name).gameObject);
                         }
                         continue;
                     }
@@ -431,12 +439,12 @@ namespace Assets.KinectView.Scripts
                 }
 
                 Transform trail;
-                if(!joints[i].transform.Find(Trail.name))
+                if(!joints[i].transform.Find(_Prefabs.Trail.name))
                 {
-                    Instantiate(Trail, joints[i].transform).name = "Trail";
+                    Instantiate(_Prefabs.Trail, joints[i].transform).name = "Trail";
                 }
 
-                trail = joints[i].transform.Find(Trail.name);
+                trail = joints[i].transform.Find(_Prefabs.Trail.name);
 
                 TrailRenderer tr = trail.GetComponent<TrailRenderer>();
                 tr.widthMultiplier = 0.21f * eOption.Scale;
