@@ -103,7 +103,7 @@ namespace Assets.KinectView.Scripts
         private Color _CameraBackColor = Color.black;
 
         private EffectAttributes _TestEA;
-
+        
         // Use this for initialization
         void Start()
         {
@@ -130,13 +130,13 @@ namespace Assets.KinectView.Scripts
 
             // Add effect attributes
             _GestureFromEffectAttributes = new Dictionary<string, EffectAttributes>();
-            _GestureFromEffectAttributes["Jump"] = new EffectAttributes(0.4, JointType.SpineMid, _EffectNames[0]);
-            _GestureFromEffectAttributes["Punch"] = new EffectAttributes(0.4, JointType.HandRight, _EffectNames[1]);
-            _GestureFromEffectAttributes["ChimpanzeeClap_Left"] = new EffectAttributes(0.4, JointType.HandTipLeft, Resources.Load("Prefabs/clap_effe") as GameObject);
-            _GestureFromEffectAttributes["ChimpanzeeClap_Right"] = new EffectAttributes(0.4, JointType.HandTipRight, Resources.Load("Prefabs/clap_effe") as GameObject);
-            _GestureFromEffectAttributes["Daisuke"] = new EffectAttributes(0.4, JointType.Head, _EffectNames[0]);
-            _GestureFromEffectAttributes["Kamehameha"] = new EffectAttributes(0.4, JointType.HandLeft, _EffectNames[2]);
-
+            _GestureFromEffectAttributes["Jump"] = new EffectAttributes(0.35, JointType.SpineMid, 1, _EffectNames[0]);
+            _GestureFromEffectAttributes["Punch"] = new EffectAttributes(0.3, JointType.HandRight, 1, Resources.Load("Prefabs/jump_and_clap_ripple") as GameObject);
+            _GestureFromEffectAttributes["ChimpanzeeClap_Left"] = new EffectAttributes(0.3, JointType.HandTipLeft, 1, Resources.Load("Prefabs/clap_effe") as GameObject);
+            _GestureFromEffectAttributes["ChimpanzeeClap_Right"] = new EffectAttributes(0.3, JointType.HandTipRight, 1, Resources.Load("Prefabs/clap_effe") as GameObject);
+            _GestureFromEffectAttributes["Daisuke"] = new EffectAttributes(0.4, JointType.Head, 3, _EffectNames[0]);
+            _GestureFromEffectAttributes["Kamehameha"] = new EffectAttributes(0.2, JointType.HandLeft, 1, _EffectNames[2]);
+            
             _RbColor = new RainbowColor(0, 0.001f);
 
             // 開始時間の記録
@@ -216,7 +216,6 @@ namespace Assets.KinectView.Scripts
                     fw = Instantiate(FireWorks_Botan, LaunchPad.transform);
                     ps = fw.GetComponent<ParticleSystem>();
                     fwm = fw.GetComponent<FireWorksManager>();
-                    ps.startLifetime = (Calibration.RectSize.Height / 5f) / 100f;
                     fwm.StartColor = data.color;
                     ps.Play(true);
                     Destroy(fw.gameObject, 7);
@@ -225,7 +224,6 @@ namespace Assets.KinectView.Scripts
                     fw = Instantiate(FireWorks_Senrin, LaunchPad.transform);
                     ps = fw.GetComponent<ParticleSystem>();
                     fwm = fw.GetComponent<FireWorksManager>();
-                    ps.startLifetime = (Calibration.RectSize.Height / 5f) / 100f;
                     fwm.StartColor = data.color;
                     ps.Play(true);
                     Destroy(fw.gameObject, 7);
@@ -260,7 +258,7 @@ namespace Assets.KinectView.Scripts
                 Audio.PlayOneShot(Clip);
             }
             _bodyCount = _Joints.Count;
-
+            
             foreach (GameObject body in _ColorBodyView.GetBodies())
             {
                 AddingTrailRendererToBody(body);
@@ -279,7 +277,7 @@ namespace Assets.KinectView.Scripts
                 _CameraBackColor = Color.black;
             
             // 時間制限
-            if (_Customize.TimeLimit != 0)
+            if (_Customize != null && _Customize.TimeLimit != 0)
             {
                 if ((_Customize.TimeLimit * 60) - (Time.realtimeSinceStartup - _StartedTime) <= 0)
                 {
@@ -307,9 +305,7 @@ namespace Assets.KinectView.Scripts
             EffectAttributes ea = _GestureFromEffectAttributes[result.Key.Name];
             if (result.Value.Confidence < ea.Threshold)
                 return;
-
-            Debug.Log(result.Key.Name + "Confidence : " + result.Value.Confidence);
-
+            
             if (IsConnected)
             {
                 var gesture = _GestureRelation[result.Key.Name];
@@ -338,10 +334,12 @@ namespace Assets.KinectView.Scripts
 
                             case EffectAttributes.EffectType.ParticleSystem:
                                 var effe = Instantiate(ea.Effect, transform);
+                                effe.transform.position = _Joints[id][ea.AttachPosition].transform.position;
                                 effe.GetComponent<ParticleSystem>().Play(true);
                                 Destroy(effe.gameObject, 10);
                                 break;
                         }
+
                         //SendEffect(
                         //    effectName,
                         //    pos,
@@ -356,8 +354,21 @@ namespace Assets.KinectView.Scripts
             }
             else
             {
-                var pos = _Joints[id][ea.AttachPosition].transform.position;
-                EffekseerSystem.PlayEffect(ea.EffectName, pos);
+                switch (ea.Type)
+                {
+                    case EffectAttributes.EffectType.Effekseer:
+                        var h = EffekseerSystem.PlayEffect(ea.EffectName, _Joints[id][ea.AttachPosition].transform.position);
+                        h.SetScale(ea.Scale);
+                        h.SetRotation(Quaternion.Euler(new Vector3(0, 90, 0)));
+                        break;
+
+                    case EffectAttributes.EffectType.ParticleSystem:
+                        var effe = Instantiate(ea.Effect, _Joints[id][ea.AttachPosition].transform);
+                        effe.transform.position = _Joints[id][ea.AttachPosition].transform.position;
+                        effe.GetComponent<ParticleSystem>().Play(true);
+                        Destroy(effe.gameObject, 10);
+                        break;
+                }
             }
 
         }
@@ -408,7 +419,6 @@ namespace Assets.KinectView.Scripts
                 if(!joints[i].transform.Find(Trail.name))
                 {
                     Instantiate(Trail, joints[i].transform).name = "Trail";
-                    Instantiate(Spacium, joints[i].transform).name = "Spacium";
                 }
 
                 trail = joints[i].transform.Find(Trail.name);

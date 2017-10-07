@@ -6,9 +6,9 @@ public class SetLaunchPadPosition : MonoBehaviour
 {
 
 	// Use this for initialization
-	void Start ()
+	void Update ()
     {
-        this.transform.position = new Vector3(0, -(Calibration.RectSize.Height / 2f) / 100f, -3);
+        this.transform.position = new Vector3(Camera.main.transform.position.x, -Camera.main.orthographicSize, -3);
 	}
 	
 }

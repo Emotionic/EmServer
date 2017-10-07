@@ -34,7 +34,14 @@ public class FireWorksManager : MonoBehaviour
         color.gradient = gradient;
 
         ParticleSystem.MainModule main = comp.GetComponent<ParticleSystem>().main;
+        
         main.startColor = color;
+
+        if(main.childCount >= 1)
+        {
+            ParticleSystem.MainModule sub = comp.GetChild(0).GetComponent<ParticleSystem>().main;
+            sub.startColor = color;
+        }
     }
 
     // Update is called once per frame
