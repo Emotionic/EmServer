@@ -65,8 +65,8 @@ namespace Assets.KinectView.Scripts
         {
             { "Jump", Emotionic.Gesture.Jump },
             { "Punch", Emotionic.Gesture.Punch },
-            {"ChimpanzeeClap_Left", Emotionic.Gesture.ChimpanzeeClap_Left  },
-            {"ChimpanzeeClap_Right", Emotionic.Gesture.ChimpanzeeClap_Right },
+            {"ChimpanzeeClap_Left", Emotionic.Gesture.ChimpanzeeClap  },
+            {"ChimpanzeeClap_Right", Emotionic.Gesture.ChimpanzeeClap },
             {"Daisuke", Emotionic.Gesture.Daisuke },
             {"Kamehameha", Emotionic.Gesture.Kamehameha },
         };
@@ -74,7 +74,7 @@ namespace Assets.KinectView.Scripts
         private readonly Dictionary<Emotionic.Effect, string> _EffectRelation = new Dictionary<Emotionic.Effect, string>()
         {
             { Emotionic.Effect.Impact, "StairBroken" },
-            { Emotionic.Effect.Punch, "punch" }
+            { Emotionic.Effect.Ripple, "punch" }
         };
 
         private readonly Dictionary<Emotionic.Effect, GameObject> _EffectPrefabs = new Dictionary<Emotionic.Effect, GameObject>()
@@ -490,7 +490,7 @@ namespace Assets.KinectView.Scripts
             return col;
         }
 
-        private void SendEffect(string name, Vector3 pos, Color color, bool isRainbow, Vector3 scale, Quaternion rotation, bool doLoop = false)
+        private void SendEffect(string name, Vector3 pos, Color color, Vector3 scale, Quaternion rotation)
         {
             if (!IsConnected) return;
 
@@ -498,10 +498,8 @@ namespace Assets.KinectView.Scripts
             data.Name = name;
             data.Position = Camera.main.WorldToViewportPoint(pos);
             data.Color = color;
-            data.IsRainbow = isRainbow;
             data.Scale = scale;
             data.Rotation = rotation;
-            data.DoLoop = doLoop;
 
             EffectCreated(data);
         }
