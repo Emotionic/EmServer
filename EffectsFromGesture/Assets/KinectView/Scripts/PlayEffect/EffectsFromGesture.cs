@@ -81,7 +81,7 @@ namespace Assets.KinectView.Scripts
         {
             { Emotionic.Effect.Beam, Resources.Load<GameObject>("Prefabs/KamehameCharge") },
             { Emotionic.Effect.Ripple, Resources.Load<GameObject>("Prefabs/punch")},
-            {Emotionic.Effect.Ripple, Resources.Load<GameObject>("Prefabs/clap_effe") }
+            {Emotionic.Effect.Clap, Resources.Load<GameObject>("Prefabs/clap_effe") }
         };
 
         private GestureManager _GestureManager;
@@ -103,7 +103,7 @@ namespace Assets.KinectView.Scripts
 
         private float _StartedTime;
 
-        private List<float> _timeLeft = new List<float>();
+        private List<float> _timeLeft;
 
         private int _bodyCount = 0;
 
@@ -149,6 +149,7 @@ namespace Assets.KinectView.Scripts
             // 開始時間の記録
             _StartedTime = Time.realtimeSinceStartup;
 
+            _timeLeft = new List<float>();
             for (var i = 0; i < 6; i++)
                 _timeLeft.Add(0);
 
@@ -283,20 +284,24 @@ namespace Assets.KinectView.Scripts
                 _CameraBackColor = Color.black;
             
             // 時間制限
-            if (_Customize != null && _Customize.TimeLimit != 0)
+            if(_Customize != null)
             {
-                if ((_Customize.TimeLimit * 60) - (Time.realtimeSinceStartup - _StartedTime) <= 0)
+                if (_Customize.TimeLimit != 0)
                 {
-                    // 時間経過 -> シーン遷移
-                    _WSServer.OnPerformEndedAuto();
-                    if (Recoder.isRecording)
-                        Recoder.EndRecording();
-                    SceneManager.LoadScene("FinishScene");
+                    if ((_Customize.TimeLimit * 60) - (Time.realtimeSinceStartup - _StartedTime) <= 0)
+                    {
+                        // 時間経過 -> シーン遷移
+                        _WSServer.OnPerformEndedAuto();
+                        if (Recoder.isRecording)
+                            Recoder.EndRecording();
+                        SceneManager.LoadScene("FinishScene");
+                    }
                 }
-            }
 
-            // 残像切り替え
-            Cube.SetActive(_Customize.IsZNZOVisibled);
+                // 残像切り替え
+                Cube.SetActive(_Customize.IsZNZOVisibled);
+
+            }
 
             for (var i = 0; i < 6; i++)
                 _timeLeft[i] -= Time.deltaTime;
@@ -374,6 +379,7 @@ namespace Assets.KinectView.Scripts
                         effe.transform.rotation = _Joints[id][ea.AttachPosition].transform.rotation;
                         effe.GetComponent<ParticleSystem>().Play(true);
                         Destroy(effe.gameObject, 10);
+                        Debug.Log("[EFFECT]" + ea.EffectKey.ToString() + " at " + effe.transform.position + " roll " + effe.transform.rotation);
                         break;
                 }
             }
