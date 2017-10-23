@@ -21,7 +21,7 @@ namespace Assets.KinectView.Scripts
         public Material TrailMaterial;
 
         public GameObject GestureManager;
-        
+
         public GameObject BodySourceManager;
 
         public GameObject LaunchPad;
@@ -41,6 +41,8 @@ namespace Assets.KinectView.Scripts
 
         public bool PlayNewBodySound;
 
+        public GameObject ImageAR;
+
         private WSServer _WSServer;
 
         private Camera _MainCamera;
@@ -50,7 +52,7 @@ namespace Assets.KinectView.Scripts
         private EffectPrefabs _Prefabs;
 
         private bool initCustomized = false;
-        
+
         /// <summary>
         /// エフェクト名
         /// </summary>
@@ -72,7 +74,7 @@ namespace Assets.KinectView.Scripts
         };
 
         private Dictionary<Emotionic.Effect, GameObject> _EffectPrefabs;
-        
+
         private GestureManager _GestureManager;
 
         private bool _IsRegMethod = false;
@@ -99,7 +101,7 @@ namespace Assets.KinectView.Scripts
         private Color _CameraBackColor = Color.black;
 
         private EffectAttributes _TestEA;
-        
+
         // Use this for initialization
         void Start()
         {
@@ -136,12 +138,12 @@ namespace Assets.KinectView.Scripts
             // Add effect attributes
             _GestureFromEffectAttributes = new Dictionary<string, EffectAttributes>();
             _GestureFromEffectAttributes["Jump"] = new EffectAttributes(0.3, JointType.SpineMid, 1, _EffectNames[0]);
-            _GestureFromEffectAttributes["Punch"] = new EffectAttributes(0.15, JointType.HandRight, 1, Emotionic.Effect.Ripple);
-            _GestureFromEffectAttributes["ChimpanzeeClap_Left"] = new EffectAttributes(0.25, JointType.HandTipLeft, 0.1f, Emotionic.Effect.Clap);
-            _GestureFromEffectAttributes["ChimpanzeeClap_Right"] = new EffectAttributes(0.25, JointType.HandTipRight, 0.1f, Emotionic.Effect.Clap);
+            _GestureFromEffectAttributes["Punch"] = new EffectAttributes(0.1, JointType.HandRight, 1, Emotionic.Effect.Ripple);
+            _GestureFromEffectAttributes["ChimpanzeeClap_Left"] = new EffectAttributes(0.2, JointType.HandTipLeft, 0.1f, Emotionic.Effect.Clap);
+            _GestureFromEffectAttributes["ChimpanzeeClap_Right"] = new EffectAttributes(0.2, JointType.HandTipRight, 0.1f, Emotionic.Effect.Clap);
             _GestureFromEffectAttributes["Daisuke"] = new EffectAttributes(0.3, JointType.Head, 3, _EffectNames[0]);
-            _GestureFromEffectAttributes["Kamehameha"] = new EffectAttributes(0.25, JointType.HandLeft, 1, Emotionic.Effect.Beam);
-            
+            _GestureFromEffectAttributes["Kamehameha"] = new EffectAttributes(0.15, JointType.HandLeft, 1, Emotionic.Effect.Beam);
+
             _RbColor = new RainbowColor(0, 0.001f);
 
             // 開始時間の記録
@@ -153,12 +155,6 @@ namespace Assets.KinectView.Scripts
 
             // 音声認識イベントの登録
             GameObject.Find("VoiceManager").GetComponent<VoiceManager>().Recognized += EffectsFromGesture_Recognized;
-
-            var path = new DataPath(DataPath.Root.Current, "Capture/" + DateTime.Now.ToString("yyyyMMdd_HHmmss"));
-            path.CreateDirectory();
-            Recorder.outputDir = path;
-
-            // Recorder.BeginRecording();
 
         }
 
@@ -198,7 +194,7 @@ namespace Assets.KinectView.Scripts
 
                     //Write to a file in the project folder
                     File.WriteAllBytes(path, bytes);
-                    
+
                     break;
 
             }
@@ -214,6 +210,10 @@ namespace Assets.KinectView.Scripts
             {
                 if (_Customize.DoShare)
                 {
+                    var path = new DataPath(DataPath.Root.Current, "Capture/" + DateTime.Now.ToString("yyyyMMdd_HHmmss"));
+                    path.CreateDirectory();
+                    Recorder.outputDir = path;
+
                     Recorder.BeginRecording();
                 }
 
@@ -227,7 +227,7 @@ namespace Assets.KinectView.Scripts
             GameObject fw;
             ParticleSystem ps;
             FireWorksManager fwm;
-            switch(data.name)
+            switch (data.name)
             {
                 case "heart":
                     fw = Instantiate(_Prefabs.FireWorks_Botan, LaunchPad.transform);
@@ -258,32 +258,32 @@ namespace Assets.KinectView.Scripts
                 _BodyManager = BodySourceManager.GetComponent<BodySourceManager>();
                 _ColorBodyView = BodySourceManager.GetComponent<ColorBodySourceView>();
             }
-            
+
             if (_MainCamera == null)
                 _MainCamera = GameObject.Find("ConvertCamera").GetComponent<Camera>();
 
-            if(!_IsRegMethod)
+            if (!_IsRegMethod)
             {
                 _GestureManager.GestureDetected += _GestureManager_GestureDetected;
                 _IsRegMethod = true;
             }
 
             _Joints = _ColorBodyView.JointsFromBodies;
-            
+
             if (PlayNewBodySound && _Joints.Count > _bodyCount)
             {
                 Audio.pitch = 1.0f;
                 Audio.PlayOneShot(Clip);
             }
             _bodyCount = _Joints.Count;
-            
+
             foreach (GameObject body in _ColorBodyView.GetBodies())
             {
                 AddingTrailRendererToBody(body);
             }
 
             _RbColor.Update();
-            
+
             Camera.main.backgroundColor = _CameraBackColor;
             if (_CameraBackColor != Color.black)
                 _CameraBackColor = Color.black;
@@ -304,6 +304,9 @@ namespace Assets.KinectView.Scripts
                 // 残像切り替え
                 Cube.SetActive(_Customize.IsZNZOVisibled);
 
+                // AR切替
+                ImageAR.SetActive(_Customize.JoinType / 1000 == 1);
+
                 for (var i = 0; i < 6; i++)
                     _timeLeft[i] -= Time.deltaTime;
             }
@@ -318,7 +321,7 @@ namespace Assets.KinectView.Scripts
             EffectAttributes ea = _GestureFromEffectAttributes[result.Key.Name];
             if (result.Value.Confidence < ea.Threshold)
                 return;
-            
+
             if (IsConnected)
             {
                 var gesture = _GestureRelation[result.Key.Name];
@@ -327,36 +330,69 @@ namespace Assets.KinectView.Scripts
                     return;
                 }
 
-                Transform transform;
-                string effectName;
+                Transform _transform;
 
                 foreach (var custom in _Customize.EffectsCustomize[gesture])
                 {
                     foreach (var parts in custom.Value.AttachedParts)
                     {
-                        transform = _Joints[id][(JointType)Enum.Parse(typeof(JointType), parts)].transform;
+                        _transform = _Joints[id][(JointType)Enum.Parse(typeof(JointType), parts)].transform;
 
-                        if (_EffectRelation.ContainsKey(custom.Key))
+                        if (custom.Key == Emotionic.Effect.Impact)
                         {
-                            var h = EffekseerSystem.PlayEffect(_EffectRelation[custom.Key], transform.position);
-                            h.SetRotation(transform.rotation);
+                            var h = EffekseerSystem.PlayEffect(_EffectRelation[custom.Key], _transform.position);
                             h.SetScale(GetScaleVec(custom.Value.Scale));
+                            h.SetRotation(_transform.rotation);
+                            break;
                         }
-                        else
+
+                        var effe = Instantiate(_EffectPrefabs[custom.Key]);
+                        effe.transform.position = _transform.position;
+
+                        switch (custom.Key)
                         {
-                            var effe = Instantiate(_EffectPrefabs[custom.Key], transform);
-                            effe.transform.position = transform.position;
-                            effe.transform.rotation = transform.rotation;
-                            effe.GetComponent<ParticleSystem>().Play(true);
-                            Destroy(effe.gameObject, 10);
+                            case Emotionic.Effect.Beam:
+                                if (_transform.position.x < _Joints[id][JointType.SpineMid].transform.position.x)
+                                {
+                                    effe.transform.Rotate(new Vector3(0, 180, 0));
+                                }
+                                break;
+
+                            case Emotionic.Effect.Ripple:
+                                if (_transform.position.x < _Joints[id][JointType.SpineMid].transform.position.x)
+                                {
+                                    if (_Joints[id][JointType.HandLeft].transform.position.x < _Joints[id][JointType.HandRight].transform.position.x)
+                                    {
+                                        effe.transform.position = _Joints[id][JointType.HandRight].transform.position;
+                                    }
+                                    else
+                                    {
+                                        effe.transform.position = _Joints[id][JointType.HandLeft].transform.position;
+                                    }
+                                }
+                                else
+                                {
+                                    if (_Joints[id][JointType.HandLeft].transform.position.x < _Joints[id][JointType.HandRight].transform.position.x)
+                                    {
+                                        effe.transform.position = _Joints[id][JointType.HandLeft].transform.position;
+                                    }
+                                    else
+                                    {
+                                        effe.transform.position = _Joints[id][JointType.HandRight].transform.position;
+                                    }
+                                }
+                                break;
                         }
+
+                        effe.GetComponent<ParticleSystem>().Play(true);
+                        Destroy(effe.gameObject, 10);
 
                         StartCoroutine(SendEffect(
                             custom.Key.ToString(),
-                            _Joints[id][ea.AttachPosition].transform.position,
+                            _transform.position,
                             FloatListToColor(custom.Value.Color),
                             GetScaleVec(custom.Value.Scale),
-                            transform.rotation
+                            _transform.rotation
                         ));
 
                     }
@@ -377,7 +413,7 @@ namespace Assets.KinectView.Scripts
                         effe.transform.position = _Joints[id][ea.AttachPosition].transform.position;
 
                         // rotate
-                        switch(ea.EffectKey)
+                        switch (ea.EffectKey)
                         {
                             case Emotionic.Effect.Beam:
                                 if (_Joints[id][ea.AttachPosition].transform.position.x < _Joints[id][JointType.SpineMid].transform.position.x)
@@ -402,7 +438,7 @@ namespace Assets.KinectView.Scripts
                                     if (_Joints[id][JointType.HandLeft].transform.position.x < _Joints[id][JointType.HandRight].transform.position.x)
                                     {
                                         effe.transform.position = _Joints[id][JointType.HandLeft].transform.position;
-                                    }                                    
+                                    }
                                     else
                                     {
                                         effe.transform.position = _Joints[id][JointType.HandRight].transform.position;
@@ -410,7 +446,7 @@ namespace Assets.KinectView.Scripts
                                 }
                                 break;
                         }
-                        
+
                         effe.GetComponent<ParticleSystem>().Play(true);
                         Destroy(effe.gameObject, 10);
 
@@ -436,7 +472,7 @@ namespace Assets.KinectView.Scripts
                 _Joints[ulong.Parse(body.name)][JointType.Head],
                 _Joints[ulong.Parse(body.name)][JointType.SpineBase]
             };
-            
+
             for (int i = 0; i < joints.Length; i++)
             {
                 EffectOption eOption;
@@ -464,7 +500,7 @@ namespace Assets.KinectView.Scripts
                 }
 
                 Transform trail;
-                if(!joints[i].transform.Find(_Prefabs.Trail.name))
+                if (!joints[i].transform.Find(_Prefabs.Trail.name))
                 {
                     Instantiate(_Prefabs.Trail, joints[i].transform).name = "Trail";
                 }
@@ -553,6 +589,6 @@ namespace Assets.KinectView.Scripts
         {
             get { return _WSServer != null && _WSServer.IsConnected; }
         }
-        
+
     }
 }

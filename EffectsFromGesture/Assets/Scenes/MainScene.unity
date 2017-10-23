@@ -676,7 +676,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58efaa5188f353d4192bed7a8deb8386, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  IsBodyView: 1
+  IsBodyView: 0
   BoneMaterial: {fileID: 2100000, guid: f2ea145c63353784985576f08398a815, type: 2}
   BodySourceManager: {fileID: 689630467}
   ConvertCamera: {fileID: 814211668}
@@ -1570,6 +1570,7 @@ MonoBehaviour:
   Recorder: {fileID: 595797493}
   cap: {fileID: 8400000, guid: 58b1074c88958884a991fd8e6e5d8f50, type: 2}
   PlayNewBodySound: 1
+  ImageAR: {fileID: 1398843428}
 --- !u!4 &1935534572
 Transform:
   m_ObjectHideFlags: 0
