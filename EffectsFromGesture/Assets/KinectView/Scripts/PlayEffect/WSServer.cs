@@ -188,6 +188,24 @@ public class WSServer : MonoBehaviour
 
                             break;
 
+                        case "KINECTJOIN":
+                            // Kinectによる観客参加・ジェスチャー受信
+                            Debug.Log("KINECTJOIN : " + msg[2]);
+
+                            // 対応するエフェクトの表示
+                            switch (msg[2])
+                            {
+                                case "Jump": break;
+                                case "Punch": break;
+                                case "ChimpanzeeClap_Left": break;
+                                case "ChimpanzeeClap_Right": break;
+                                case "Daisuke": break;
+                                case "Kamehameha":break;
+                                default: break;
+                            }
+
+                            break;
+
                         /* 再起動 */
                         case "RESTART":
                             initCustomized = false;
