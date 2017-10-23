@@ -165,7 +165,7 @@ public class WSServer : MonoBehaviour
                             {
                                 initCustomized = true;
                                 if (customData.JoinType.ToString()[1] == '1')
-                                    InitKinectJoin();
+                                    SendKinectJoin("INIT");
                             } else
                             {
                                 Customize(customData);
@@ -195,9 +195,9 @@ public class WSServer : MonoBehaviour
                             // ジェスチャー受信
                             Debug.Log("KINECTJOIN : " + msg[2]);
 
-                            if (msg[2] == "INITIALIZED" && initCustomized && customData.JoinType.ToString()[1] == '1')
+                            if (msg[2] == "INIT" && initCustomized && customData.JoinType.ToString()[1] == '1')
                             {
-                                InitKinectJoin();
+                                SendKinectJoin("INIT");
                                 break;
                             }
 
@@ -217,12 +217,14 @@ public class WSServer : MonoBehaviour
 
                         /* 再起動 */
                         case "RESTART":
+                            SendKinectJoin("RESTART");
                             initCustomized = false;
                             SceneManager.LoadScene("WaitPerformer");
                             break;
 
                         /* 演技の終了 */
                         case "ENDPERFORM":
+                            SendKinectJoin("ENDPERFORM");
                             EndPerform();
                             break;
 
@@ -242,6 +244,8 @@ public class WSServer : MonoBehaviour
 
     public void OnPerformEndedAuto()
     {
+        SendKinectJoin("ENDPERFORM");
+
         var snd = "SERV\n";
         snd += "ENDPERFORM\n";
         snd += (customData.DoShare ? "DOSHARE" : "") + "\n";
@@ -271,10 +275,10 @@ public class WSServer : MonoBehaviour
         ws.Send(snd);
     }
 
-    private void InitKinectJoin()
+    private void SendKinectJoin(string action)
     {
         var snd = "KINECTJOIN";
-        snd += "INIT\n";
+        snd += action + "\n";
 
         ws.Send(snd);
     }
