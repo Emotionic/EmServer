@@ -38,7 +38,7 @@ public class WSServer : MonoBehaviour
 
     private Canvas _Canvas;
 
-    private const string EnabledJoinType = "1001";
+    private const string EnabledJoinType = "1101"; // 許可された観客参加機能 (AR, Kinect, 拍手, いいねの順)
 
     public void OnMainSceneLoaded()
     {
@@ -164,6 +164,8 @@ public class WSServer : MonoBehaviour
                             if (!initCustomized)
                             {
                                 initCustomized = true;
+                                if (customData.JoinType.ToString()[1] == '1')
+                                    InitKinectJoin();
                             } else
                             {
                                 Customize(customData);
@@ -188,9 +190,16 @@ public class WSServer : MonoBehaviour
 
                             break;
 
+                        /* Kinectによる観客参加 */
                         case "KINECTJOIN":
-                            // Kinectによる観客参加・ジェスチャー受信
+                            // ジェスチャー受信
                             Debug.Log("KINECTJOIN : " + msg[2]);
+
+                            if (msg[2] == "INITIALIZED" && initCustomized && customData.JoinType.ToString()[1] == '1')
+                            {
+                                InitKinectJoin();
+                                break;
+                            }
 
                             // 対応するエフェクトの表示
                             switch (msg[2])
@@ -258,6 +267,14 @@ public class WSServer : MonoBehaviour
         var snd = "CLIENT\n";
         snd += "AR_OK\n";
         snd += JsonUtility.ToJson(ardata) + "\n";
+
+        ws.Send(snd);
+    }
+
+    private void InitKinectJoin()
+    {
+        var snd = "KINECTJOIN";
+        snd += "INIT\n";
 
         ws.Send(snd);
     }
